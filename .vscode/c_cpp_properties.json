@@ -1,0 +1,18 @@
+{
+    "configurations": [
+        {
+            "name": "GBA",
+            "includePath": [
+                "${workspaceFolder}/include",
+                "/opt/devkitpro/libgba/include",
+                "/opt/devkitpro/devkitARM/lib/gcc/arm-none-eabi/*/include"
+            ],
+            "defines": [],
+            "compilerPath": "/opt/devkitpro/devkitARM/bin/arm-none-eabi-gcc",
+            "cStandard": "c99",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "gcc-arm"
+        }
+    ],
+    "version": 4
+}
