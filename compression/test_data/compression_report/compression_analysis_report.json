@@ -1,0 +1,59 @@
+{
+  "analysis_summary": {
+    "frequency_analysis": true,
+    "pattern_analysis": true,
+    "delta_analysis": true,
+    "audio_analyzed": true
+  },
+  "compression_breakdown": {
+    "compression_stages": {
+      "frequency_domain": 6.4651162790697665,
+      "pattern_based": 1.0,
+      "delta_encoding": 2.1718979858520404,
+      "combined": 14.041573024810864
+    },
+    "size_estimates": {
+      "original_mb": 39.322288513183594,
+      "after_frequency_mb": 6.082224482255017,
+      "after_pattern_mb": 6.082224482255017,
+      "final_size_mb": 2.8004190444833195,
+      "target_size_mb": 12
+    },
+    "target_achievement": {
+      "meets_target": true,
+      "compression_ratio_needed": 44,
+      "compression_ratio_achieved": 14.041573024810864,
+      "gap_ratio": 3.133552054478075
+    }
+  },
+  "delta_analysis": {
+    "stats": {
+      "mean_delta": 0.03937813267111778,
+      "max_delta": 0.5758631229400635,
+      "delta_variance": 0.0031987836118787527,
+      "zero_deltas": 8523,
+      "small_deltas": 4989285,
+      "medium_deltas": 13901031,
+      "large_deltas": 1725887
+    },
+    "compression_potential": {
+      "avg_bits_per_delta": 7.366828508624987,
+      "compression_ratio": 2.1718979858520404,
+      "space_savings_percent": 53.95732182109383
+    },
+    "bit_allocation": {
+      "small_deltas_4bit": 0.24200794879639087,
+      "medium_deltas_8bit": 0.6742769752509713,
+      "large_deltas_12bit": 0.08371507595263783
+    }
+  },
+  "optimization_recommendations": [
+    "\u2713 Target compression ratio achievable with current strategy!",
+    "\u2022 Pattern compression underperforming - check similarity thresholds"
+  ],
+  "target_metrics": {
+    "target_size_mb": 12,
+    "target_compression_ratio": 44,
+    "album_size_estimate": "526MB (full Polygondwanaland)"
+  }
+}
