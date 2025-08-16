@@ -33,8 +33,8 @@ def frequency_weighted_compression(input_file: str, output_base: str):
     
     print(f"Original: {len(audio)} samples @ {sr}Hz")
     
-    # Step 1: Downsample to 6.75kHz for better compression
-    target_sr = 6750
+    # Step 1: Downsample to 22.05kHz for clean GBA playback
+    target_sr = 22050
     audio_resampled = librosa.resample(audio, orig_sr=sr, target_sr=target_sr)
     print(f"Resampled {sr}Hz → {target_sr}Hz: {len(audio_resampled)} samples")
     
