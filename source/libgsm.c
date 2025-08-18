@@ -40,7 +40,7 @@ void init_sound(void)
   SETSNDRES(1);
   SNDSTAT = SNDSTAT_ENABLE;
   DSOUNDCTRL = 0x0b0e;
-  REG_TM0CNT_L = 0x10000 - (924 / 2);
+  REG_TM0CNT_L = 0x10000 - (924 / 2);  // Timer for 18.157 kHz: 16MHz / 18157 / 2 ≈ 462
   REG_TM0CNT_H = TIMER_16MHZ | TIMER_START;
 }
 
