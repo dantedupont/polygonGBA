@@ -16,7 +16,8 @@ main.o: /Users/dantedupont/repos/polygonGBA/source/main.c \
  /opt/devkitpro/libgba/include/gba_timers.h \
  /opt/devkitpro/libgba/include/gba_video.h \
  /Users/dantedupont/repos/polygonGBA/source/polygond_decoder.h \
- /Users/dantedupont/repos/polygonGBA/source/crumbling_castle_final.h
+ /Users/dantedupont/repos/polygonGBA/source/crumbling_castle_final.h \
+ /Users/dantedupont/repos/polygonGBA/source/gbfs.h
 /opt/devkitpro/libgba/include/gba.h:
 /opt/devkitpro/libgba/include/gba_affine.h:
 /opt/devkitpro/libgba/include/gba_base.h:
@@ -35,3 +36,4 @@ main.o: /Users/dantedupont/repos/polygonGBA/source/main.c \
 /opt/devkitpro/libgba/include/gba_video.h:
 /Users/dantedupont/repos/polygonGBA/source/polygond_decoder.h:
 /Users/dantedupont/repos/polygonGBA/source/crumbling_castle_final.h:
+/Users/dantedupont/repos/polygonGBA/source/gbfs.h:
