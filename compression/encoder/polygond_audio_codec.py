@@ -33,8 +33,8 @@ def frequency_weighted_compression(input_file: str, output_base: str):
     
     print(f"Original: {len(audio)} samples @ {sr}Hz")
     
-    # Step 1: Downsample to 6.75kHz for better compression
-    target_sr = 6750
+    # Step 1: Downsample to 11.025kHz for optimal quality/compression balance
+    target_sr = 11025
     audio_resampled = librosa.resample(audio, orig_sr=sr, target_sr=target_sr)
     print(f"Resampled {sr}Hz → {target_sr}Hz: {len(audio_resampled)} samples")
     
@@ -185,15 +185,17 @@ def main():
         print(f"Compression: {result['compression_ratio']:.2f}x")
         print(f"Play decoded: afplay {result['decoded_file']}")
         
-        # Project to full album
+        # Project to full album (24MB budget for both cartridges)
         album_size_mb = 526
         projected_size = album_size_mb / result['compression_ratio']
         print(f"Full album projection: {projected_size:.1f} MB")
         
-        if projected_size <= 12:
-            print("✓ TARGET ACHIEVED!")
+        if projected_size <= 24:
+            print("✓ 24MB TARGET ACHIEVED!")
+            cartridge_per_side = projected_size / 2
+            print(f"Per cartridge: {cartridge_per_side:.1f} MB (leaves {16-cartridge_per_side:.1f} MB for visuals/code)")
         else:
-            print(f"⚠ Need {projected_size/12:.1f}x more compression")
+            print(f"⚠ Need {projected_size/24:.1f}x more compression for 24MB target")
         
     except Exception as e:
         print(f"Error: {e}")
