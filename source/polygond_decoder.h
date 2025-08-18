@@ -17,7 +17,7 @@
 #define PGDA_HEADER_SIZE 13  // 4 (magic) + 4 (sample_rate) + 4 (num_deltas) + 1 (first_sample)
 
 // Audio constraints
-#define MAX_SAMPLE_RATE 8000     // Maximum supported sample rate
+#define MAX_SAMPLE_RATE 22050    // Maximum supported sample rate (CD quarter rate)
 #define MIN_SAMPLE_RATE 4000     // Minimum supported sample rate  
 #define AUDIO_BUFFER_SIZE 1024   // GBA-friendly buffer size
 #define MAX_AUDIO_SIZE 5000000   // ~5MB max compressed audio

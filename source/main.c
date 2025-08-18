@@ -186,7 +186,7 @@ int main() {
     // Show sample rate in third strip - this will help us debug!
     for(int i = 20; i < 30; i++) {
         for(int j = 0; j < 240; j++) {
-            // Visualize sample rate - if it shows up as very bright, the rate might be wrong
+            // Visualize sample rate - 11025 should show as specific color pattern
             videoBuffer[i * 240 + j] = RGB5((sample_rate >> 8) & 0x1F, (sample_rate >> 4) & 0x1F, sample_rate & 0x1F);
         }
     }
@@ -242,8 +242,11 @@ int main() {
     // Set sound bias for clean output (critical for quality)
     REG_SOUNDBIAS = (REG_SOUNDBIAS & 0x3F) | 0x4000;  // Set bias to 0x40
     
-    // Configure timer for 11.025kHz sample rate (GSM-style)
-    u32 target_sample_rate = 11025;  // Our target sample rate
+    // Configure timer using sample rate from PGDA header
+    u32 target_sample_rate = 11025;  // Fallback rate
+    if(audio_decoder.is_initialized && audio_decoder.header.sample_rate > 0) {
+        target_sample_rate = audio_decoder.header.sample_rate;  // Use actual encoded rate
+    }
     
     // GSM-style timer calculation - much cleaner than Pokemon approach
     // Timer counts down from reload value at 16.78MHz
@@ -252,11 +255,23 @@ int main() {
     REG_TM0CNT_L = timer_reload_val;
     REG_TM0CNT_H = TIMER_START;  // Enable timer with 1:1 prescaler
     
-    // Calculate buffer refill period for 11.025kHz
-    // At 60 VBlanks/sec, we need ~184 samples per VBlank
+    // Calculate buffer refill period for actual sample rate
+    // At 60 VBlanks/sec, calculate samples per VBlank
     u32 samples_per_vblank = target_sample_rate / 60;
     buffer_refill_period = AUDIO_BUFFER_SIZE / samples_per_vblank;
     if(buffer_refill_period == 0) buffer_refill_period = 1;  // Safety
+    
+    // Visual indicator of timer configuration (bottom strip)
+    for(int i = 150; i < 160; i++) {
+        for(int j = 0; j < 120; j++) {
+            // Show timer reload value (should be ~64014 for 11025Hz)
+            videoBuffer[i * 240 + j] = RGB5((timer_reload_val >> 8) & 0x1F, (timer_reload_val >> 4) & 0x1F, timer_reload_val & 0x1F);
+        }
+        for(int j = 120; j < 240; j++) {
+            // Show target sample rate being used
+            videoBuffer[i * 240 + j] = RGB5((target_sample_rate >> 8) & 0x1F, (target_sample_rate >> 4) & 0x1F, target_sample_rate & 0x1F);
+        }
+    }
     
     // Fill initial audio buffer
     fill_audio_buffer();
