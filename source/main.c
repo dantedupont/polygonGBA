@@ -9,58 +9,67 @@
 // Full track name mapping
 const char* get_full_track_name(int track_index) {
     // Map track indices to full names
-    static const char* track_names[] = {
+    // Side A: tracks 0-3, Side B: tracks 0-5 (but represent album tracks 5-10)
+    static const char* side_a_tracks[] = {
         "Crumbling Castle",
         "Polygondwanaland", 
         "The Castle In The Air",
-        "Deserted Dunes Welcome Weary Feet",
+        "Deserted Dunes Welcome Weary Feet"
+    };
+    
+    static const char* side_b_tracks[] = {
         "Inner Cell",
-        "Loyalty",
-        "Horology", 
+        "Loyalty", 
+        "Horology",
         "Tetrachromacy",
         "Searching...",
         "The Fourth Colour"
     };
     
-    if (track_index >= 0 && track_index < 10) {
-        return track_names[track_index];
+    // Determine which ROM we're in based on available tracks
+    extern const GBFS_FILE *fs;
+    int total_tracks = gbfs_count_objs(fs);
+    
+    if (total_tracks == 4) {
+        // Side A ROM
+        if (track_index >= 0 && track_index < 4) {
+            return side_a_tracks[track_index];
+        }
+    } else if (total_tracks == 6) {
+        // Side B ROM  
+        if (track_index >= 0 && track_index < 6) {
+            return side_b_tracks[track_index];
+        }
     }
+    
     return "Unknown Track";
 }
 
 // Scrolling text state
 static char full_track_name[64] = {0};
-static int scroll_offset = 0;
+static int scroll_pixel_offset = 0;
 static int scroll_delay = 0;
+static int pause_counter = 0;
 static u32 last_track_for_scroll = 0xFFFFFFFF;
 
-void draw_scrolling_text(u16* buffer, int x, int y, const char* text, u16 color, int offset) {
+void draw_scrolling_text(u16* buffer, int x, int y, const char* text, u16 color, int pixel_offset, int pause_active) {
     int text_len = strlen(text);
-    int screen_chars = (240 - x) / 8; // How many chars fit on screen from x position
+    int text_width_pixels = text_len * 8; // Each character is 8 pixels wide
+    int screen_width = 240 - x; // Available width from x position
     
-    if (text_len <= screen_chars) {
+    if (text_width_pixels <= screen_width) {
         // Text fits, no scrolling needed
         draw_text(buffer, x, y, text, color);
         return;
     }
     
-    // Create display window with scrolling
-    char display_text[32] = {0};
-    int start_pos = offset;
+    // Immediate restart approach: scroll text left by pixel_offset
+    int display_x = x - pixel_offset;
     
-    // Wrap around when we reach the end
-    if (start_pos >= text_len) {
-        start_pos = 0;
+    // Only draw if text is still visible (any part on screen)
+    if (display_x > -text_width_pixels) {
+        draw_text(buffer, display_x, y, text, color);
     }
-    
-    // Copy characters for display with wrapping
-    for (int i = 0; i < screen_chars - 1 && i < 30; i++) {
-        int src_pos = (start_pos + i) % text_len;
-        display_text[i] = text[src_pos];
-    }
-    display_text[screen_chars - 1] = '\0';
-    
-    draw_text(buffer, x, y, display_text, color);
 }
 
 void draw_track_info(u16* buffer, GsmPlaybackTracker* playback) {
@@ -74,8 +83,9 @@ void draw_track_info(u16* buffer, GsmPlaybackTracker* playback) {
     // Check if track changed - reset scrolling
     if (playback->cur_song != last_track_for_scroll) {
         last_track_for_scroll = playback->cur_song;
-        scroll_offset = 0;
+        scroll_pixel_offset = 0;
         scroll_delay = 0;
+        pause_counter = 0;
         
         // Get full track name from mapping
         const char* full_name = get_full_track_name(playback->cur_song);
@@ -83,22 +93,33 @@ void draw_track_info(u16* buffer, GsmPlaybackTracker* playback) {
         full_track_name[63] = '\0';
     }
     
-    // Update scrolling animation
-    scroll_delay++;
-    if (scroll_delay >= 30) { // Scroll every 30 frames (0.5 seconds at 60fps)
-        scroll_delay = 0;
-        scroll_offset++;
-        
-        // Reset scroll when we've shown the full text
-        int text_len = strlen(full_track_name);
-        int screen_chars = (240 - 10) / 8;
-        if (scroll_offset >= text_len + screen_chars) {
-            scroll_offset = 0;
+    // Calculate text properties for scrolling
+    int text_len = strlen(full_track_name);
+    int text_width = text_len * 8;
+    int screen_width = 240 - 10;
+    
+    // Only scroll if text is longer than screen
+    if (text_width > screen_width) {
+        // Update scrolling animation
+        if (pause_counter > 0) {
+            pause_counter--; // Count down pause
+            scroll_pixel_offset = 0; // Reset to start position during pause
+        } else {
+            scroll_delay++;
+            if (scroll_delay >= 1) { // Scroll every frame
+                scroll_delay = 0;
+                scroll_pixel_offset += 8; // Move 8 pixels per frame
+                
+                // When text has scrolled exactly its width, it's completely gone - restart immediately
+                if (scroll_pixel_offset >= text_width) {
+                    scroll_pixel_offset = 0; // Restart immediately, no pause
+                }
+            }
         }
     }
     
     // Draw scrolling track name
-    draw_scrolling_text(buffer, 10, 145, full_track_name, RGB5(31, 31, 0), scroll_offset);
+    draw_scrolling_text(buffer, 10, 145, full_track_name, RGB5(31, 31, 0), scroll_pixel_offset, pause_counter > 0);
 }
 
 // GSM playback tracker

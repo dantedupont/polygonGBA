@@ -201,7 +201,7 @@ void draw_text(u16* buffer, int x, int y, const char* text, u16 color) {
     const char* ptr = text;
     int char_x = x;
     
-    while (*ptr && char_x < 240 - 8) {
+    while (*ptr && char_x < 240) {
         char c = *ptr++;
         
         // Only render printable ASCII characters (32-126)
@@ -209,12 +209,15 @@ void draw_text(u16* buffer, int x, int y, const char* text, u16 color) {
             int char_index = c - 32; // Offset into font_data array
             const u8* char_data = font_data[char_index];
             
-            // Draw 8x8 character
-            for (int py = 0; py < 8 && y + py < 160; py++) {
-                u8 row = char_data[py];
-                for (int px = 0; px < 8 && char_x + px < 240; px++) {
-                    if (row & (0x80 >> px)) { // Test bit from left to right
-                        buffer[(y + py) * 240 + char_x + px] = color;
+            // Only draw character if any part of it would be visible on screen
+            if (char_x + 8 > 0 && char_x < 240) {
+                // Draw 8x8 character
+                for (int py = 0; py < 8 && y + py < 160; py++) {
+                    u8 row = char_data[py];
+                    for (int px = 0; px < 8 && char_x + px < 240 && char_x + px >= 0; px++) {
+                        if (row & (0x80 >> px)) { // Test bit from left to right
+                            buffer[(y + py) * 240 + char_x + px] = color;
+                        }
                     }
                 }
             }
