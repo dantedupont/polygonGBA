@@ -1,4 +1,2 @@
 # Git ignore for large files
-test_data/original/*.wav
-test_data/compressed/*.wav
 *.wav
