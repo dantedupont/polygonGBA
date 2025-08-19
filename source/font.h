@@ -18,4 +18,13 @@ extern const u8 font_data[95][8];
 //   color: 16-bit color value (RGB555 format)
 void draw_text(u16* buffer, int x, int y, const char* text, u16 color);
 
+// Initialize font tiles in VRAM for tile-based rendering
+void init_font_tiles();
+
+// Draw text using tile-based rendering on BG1
+// Parameters:
+//   tile_x, tile_y: Starting position in tiles (0-29 for x, 0-19 for y)
+//   text: Null-terminated string to render
+void draw_text_tiles(int tile_x, int tile_y, const char* text);
+
 #endif // FONT_H
