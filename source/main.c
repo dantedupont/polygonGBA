@@ -79,7 +79,7 @@ void draw_track_info_mode3(u16* buffer, GsmPlaybackTracker* playback) {
     // Clear text area (bottom portion of screen)
     for (int y = 140; y < 160; y++) {
         for (int x = 0; x < 240; x++) {
-            buffer[y * 240 + x] = RGB5(0, 31, 0); // Green background
+            buffer[y * 240 + x] = RGB5(0, 0, 15); // Green background
         }
     }
     
@@ -136,7 +136,7 @@ void draw_track_info_mode3_static(u16* buffer, GsmPlaybackTracker* playback) {
         // Clear text area once
         for (int y = 140; y < 160; y++) {
             for (int x = 0; x < 240; x++) {
-                buffer[y * 240 + x] = RGB5(0, 31, 0); // Green background
+                buffer[y * 240 + x] = RGB5(0, 0, 15); // Green background
             }
         }
         
@@ -165,8 +165,9 @@ int main() {
     // Use Mode 3 for beautiful bitmap text + sprites
     SetMode(MODE_3 | BG2_ENABLE | OBJ_ENABLE | OBJ_1D_MAP);
     
-    // Spectrum analyzer visualization - 8 vertical bars
+    // Enhanced spectrum analyzer visualization - 8 multi-tile vertical bars
     #define NUM_BARS 8
+    #define TILES_PER_BAR 12  // Each bar can be up to 12 tiles tall (96 pixels) - MASSIVE bars!
     
     // Set up sprite palette for visualization bars
     SPRITE_PALETTE[0] = RGB5(0, 0, 0);      // Transparent
@@ -181,15 +182,25 @@ int main() {
     // In Mode 3, framebuffer is 0x6000000-0x6012C00, so sprites must be after that
     u32* spriteGfx = (u32*)(0x6014000); // Safe location after Mode 3 framebuffer
     
-    // Create 8x8 solid tiles for visualization bars (4bpp format)
-    for(int tile = 0; tile < NUM_BARS; tile++) {
-        u32 color_index = tile + 1; // Use different colors for each bar
-        u32 pixel_data = (color_index << 0) | (color_index << 4) | (color_index << 8) | (color_index << 12) |
-                        (color_index << 16) | (color_index << 20) | (color_index << 24) | (color_index << 28);
+    // Create 32x8 tiles for ULTRA WIDE, MASSIVE height bars with no color bleeding
+    // Each bar gets completely separate tile memory space
+    for(int bar = 0; bar < NUM_BARS; bar++) {
+        u32 base_color = bar + 1; // Use different colors for each bar
         
-        // Fill 8 rows of the tile
-        for(int row = 0; row < 8; row++) {
-            spriteGfx[tile * 8 + row] = pixel_data;
+        // Create 32x8 sprite data: each 32x8 sprite uses 4 consecutive 8x8 tiles
+        u32 pixel_data = (base_color << 0) | (base_color << 4) | (base_color << 8) | (base_color << 12) |
+                        (base_color << 16) | (base_color << 20) | (base_color << 24) | (base_color << 28);
+        
+        // Each bar gets 12 tile quads (48 tiles total per bar) - no overlap!
+        for(int tile_quad = 0; tile_quad < TILES_PER_BAR; tile_quad++) {
+            int base_tile = (bar * TILES_PER_BAR + tile_quad) * 4; // Each 32x8 uses 4 8x8 tiles
+            
+            // Create all 4 tiles for this 32x8 sprite
+            for(int subtile = 0; subtile < 4; subtile++) {
+                for(int row = 0; row < 8; row++) {
+                    spriteGfx[(base_tile + subtile) * 8 + row] = pixel_data;
+                }
+            }
         }
     }
     
@@ -200,17 +211,8 @@ int main() {
         OAM[i].attr2 = 0;
     }
     
-    // Create 8 vertical bars for spectrum visualization
-    // Position them in top area to avoid text overlap
-    for(int i = 0; i < NUM_BARS; i++) {
-        int x = 20 + (i * 25);  // Spread across screen width
-        int y = 20;             // Top area
-        
-        OAM[i].attr0 = ATTR0_NORMAL | ATTR0_COLOR_16 | ATTR0_SQUARE | (y);
-        OAM[i].attr1 = ATTR1_SIZE_8 | (x);
-        // Tiles start at offset from 0x6014000, calculate proper tile number
-        OAM[i].attr2 = ATTR2_PALETTE(0) | (512 + i); // 512 = offset for 0x6014000 location
-    }
+    // Initial OAM setup will be handled dynamically in main loop
+    // No need for static sprite initialization since we're using multi-tile bars
     
     // Initialize GBFS filesystem
     track_filesystem = find_first_gbfs_file(find_first_gbfs_file);
@@ -226,50 +228,126 @@ int main() {
     
     // Main loop with proper GSM timing
     while(1) {
-        // REAL spectrum analyzer - using actual audio data accumulated during playback!
+        // ENHANCED spectrum analyzer - bouncy, centered, multi-tile bars!
         
-        // Create 8 spectrum bars from the accumulated audio data
-        for(int i = 0; i < NUM_BARS; i++) {
-            // Get the accumulated amplitude for this frequency band
-            long accumulated_amplitude = playback.spectrum_accumulators[i];
+        // Enhanced responsive frequency analysis with dynamic scaling
+        static int reset_counter = 0;
+        static long previous_amplitudes[NUM_BARS] = {0};
+        static int adaptive_scale = 1000; // Dynamic scaling factor
+        
+        reset_counter++;
+        if(reset_counter >= 4) { // Faster updates for better responsiveness
+            reset_counter = 0;
             
-            // Calculate average amplitude for this band
-            int bar_height = 8; // Minimum height
-            if(playback.spectrum_sample_count > 0) {
-                // Scale the accumulated amplitude to bar height
-                int avg_amplitude = accumulated_amplitude / (playback.spectrum_sample_count / 8);
-                bar_height = 8 + (avg_amplitude / 2000); // Scale to reasonable range
+            // Calculate average amplitude across all bars for auto-scaling
+            long total_amplitude = 0;
+            for(int i = 0; i < NUM_BARS; i++) {
+                total_amplitude += playback.spectrum_accumulators[i];
             }
             
-            // Clamp bar height to screen bounds
-            if(bar_height < 8) bar_height = 8;
-            if(bar_height > 60) bar_height = 60;
+            // Dynamic scaling: when all frequencies are active, increase sensitivity
+            if(total_amplitude > 0 && playback.spectrum_sample_count > 0) {
+                long avg_total = total_amplitude / NUM_BARS;
+                if(avg_total > adaptive_scale * 2) {
+                    adaptive_scale = avg_total / 3; // Reduce scale when loud
+                } else if(avg_total < adaptive_scale / 3) {
+                    adaptive_scale = avg_total * 2; // Increase scale when quiet
+                }
+                // Clamp scaling factor
+                if(adaptive_scale < 500) adaptive_scale = 500;
+                if(adaptive_scale > 4000) adaptive_scale = 4000;
+            }
             
-            // Position bars vertically (Y grows downward on GBA)
-            int base_y = 110; // Bottom of bars (above text)
-            int new_y = base_y - bar_height; // Top of bar
-            
-            // Make sure Y is within screen bounds
-            if(new_y < 10) new_y = 10;
-            if(new_y > 140) new_y = 140;
-            
-            // Update sprite Y position for height effect
-            OAM[i].attr0 = (OAM[i].attr0 & ~0xFF) | (new_y & 0xFF);
-            
-            // Keep X positions fixed - evenly spaced spectrum display
-            int x = 20 + (i * 25); // Evenly spaced across screen
-            OAM[i].attr1 = (OAM[i].attr1 & ~0x01FF) | (x & 0x01FF);
-        }
-        
-        // Reset spectrum accumulators periodically for fresh data
-        static int reset_counter = 0;
-        reset_counter++;
-        if(reset_counter >= 10) { // Reset every ~6 frames for smooth animation
-            reset_counter = 0;
             for(int i = 0; i < NUM_BARS; i++) {
-                playback.spectrum_accumulators[i] = 0;
+                long accumulated_amplitude = playback.spectrum_accumulators[i];
+                int target_height = 8; // Minimum height
+                
+                if(playback.spectrum_sample_count > 0 && accumulated_amplitude > 0) {
+                    // Use relative amplitude compared to previous frame
+                    long amplitude_change = accumulated_amplitude - previous_amplitudes[i];
+                    long base_amplitude = accumulated_amplitude / (playback.spectrum_sample_count / 8);
+                    
+                    // Dynamic response: emphasize changes and relative differences
+                    int relative_boost = (amplitude_change > 0) ? (amplitude_change / adaptive_scale) : 0;
+                    int base_response = base_amplitude / adaptive_scale;
+                    
+                    target_height = 8 + base_response + relative_boost;
+                    
+                    // Add frequency-specific sensitivity
+                    if(i == 0) target_height = target_height * 12 / 10; // Boost bass slightly
+                    if(i >= 6) target_height = target_height * 14 / 10; // Boost treble more
+                }
+                
+                // Clamp target height - MASSIVE bars for symmetric screen usage!
+                if(target_height < 8) target_height = 8;
+                if(target_height > 100) target_height = 100; // Symmetric: 20px margins top/bottom
+                
+                playback.bar_target_heights[i] = target_height;
+                previous_amplitudes[i] = accumulated_amplitude;
+                playback.spectrum_accumulators[i] = 0; // Reset accumulator
             }
             playback.spectrum_sample_count = 0;
+        }
+        
+        // Bouncy physics simulation for each bar
+        for(int i = 0; i < NUM_BARS; i++) {
+            int current = playback.bar_current_heights[i];
+            int target = playback.bar_target_heights[i];
+            
+            if(target > current) {
+                // Audio got louder - snap up quickly
+                playback.bar_current_heights[i] = target;
+                playback.bar_velocities[i] = 0;
+            } else {
+                // Audio got quieter - fall down smoothly with physics
+                playback.bar_velocities[i] += 2; // Gravity acceleration
+                playback.bar_current_heights[i] -= playback.bar_velocities[i];
+                
+                // Don't fall below target or minimum
+                if(playback.bar_current_heights[i] < target) {
+                    playback.bar_current_heights[i] = target;
+                    playback.bar_velocities[i] = 0;
+                }
+                if(playback.bar_current_heights[i] < 8) {
+                    playback.bar_current_heights[i] = 8;
+                    playback.bar_velocities[i] = 0;
+                }
+            }
+        }
+        
+        // Render perfectly centered, multi-tile bars
+        int sprite_index = 0;
+        int screen_center_x = 120; // GBA screen is 240 pixels wide
+        int bar_width = 32; // Each sprite is 32px wide - ULTRA WIDE bars!
+        int bar_gap = 8; // Smaller gap for 32px bars
+        int total_content = (NUM_BARS * bar_width) + ((NUM_BARS - 1) * bar_gap); // 8*32 + 7*8 = 312
+        int start_x = screen_center_x - (total_content / 2); // Perfect centering
+        
+        for(int i = 0; i < NUM_BARS; i++) {
+            int bar_height = playback.bar_current_heights[i];
+            int x = start_x + (i * (bar_width + bar_gap)); // Perfectly centered bars
+            int base_y = 100; // Bottom of bars - positioned above track title bar
+            
+            // Calculate how many tiles this bar needs (each tile is 8 pixels tall)
+            int tiles_needed = (bar_height + 7) / 8; // Round up division
+            if(tiles_needed > TILES_PER_BAR) tiles_needed = TILES_PER_BAR;
+            
+            // Render 32x8 tiles from bottom to top - NO COLOR BLEEDING!
+            for(int tile = 0; tile < tiles_needed && sprite_index < 128; tile++) {
+                int tile_y = base_y - ((tile + 1) * 8); // Each tile 8 pixels up
+                int tile_index = ((i * TILES_PER_BAR) + tile) * 4; // Each 32x8 uses 4 8x8 tiles
+                
+                OAM[sprite_index].attr0 = ATTR0_NORMAL | ATTR0_COLOR_16 | ATTR0_SQUARE | (tile_y & 0xFF);
+                OAM[sprite_index].attr1 = ATTR1_SIZE_32 | (x & 0x01FF); // 32x8 sprites - ULTRA WIDE!
+                OAM[sprite_index].attr2 = ATTR2_PALETTE(0) | (512 + tile_index); // Points to first tile
+                sprite_index++;
+            }
+        }
+        
+        // Disable unused sprites
+        while(sprite_index < 128) {
+            OAM[sprite_index].attr0 = ATTR0_DISABLED;
+            sprite_index++;
         }
         
         // Use original GSMPlayer-GBA timing: 

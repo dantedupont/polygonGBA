@@ -89,6 +89,9 @@ int initPlayback(GsmPlaybackTracker *playback)
   // Initialize spectrum analyzer
   for(int i = 0; i < 8; i++) {
     playback->spectrum_accumulators[i] = 0;
+    playback->bar_current_heights[i] = 8;  // Start at minimum height
+    playback->bar_target_heights[i] = 8;
+    playback->bar_velocities[i] = 0;
   }
   playback->spectrum_sample_count = 0;
   
@@ -233,11 +236,31 @@ void advancePlayback(GsmPlaybackTracker *playback, GsmPlaybackInputMapping *mapp
       *dst_pos++ = cur_sample >> 8;
       playback->last_sample = cur_sample;
       
-      // Accumulate spectrum data with zero CPU overhead
-      // Map decode_pos to one of 8 frequency bands
-      int band = ((playback->decode_pos - 1) * 8) / 160;
+      // Enhanced frequency mapping with better separation
+      // Use both sample position and amplitude for frequency band classification
+      int pos = playback->decode_pos - 1;
+      int abs_sample = cur_sample < 0 ? -cur_sample : cur_sample;
+      int band;
+      
+      if(pos < 20) {
+        band = 0; // Low frequencies (bass)
+      } else if(pos < 40) {
+        band = abs_sample > 8000 ? 1 : 0; // Low-mid split by amplitude
+      } else if(pos < 60) {
+        band = abs_sample > 6000 ? 2 : 1; // Mid frequencies
+      } else if(pos < 80) {
+        band = abs_sample > 4000 ? 3 : 2; // Mid-high
+      } else if(pos < 100) {
+        band = abs_sample > 3000 ? 4 : 3; // High frequencies
+      } else if(pos < 120) {
+        band = abs_sample > 2000 ? 5 : 4; // Very high
+      } else if(pos < 140) {
+        band = abs_sample > 1500 ? 6 : 5; // Ultra high
+      } else {
+        band = abs_sample > 1000 ? 7 : 6; // Highest frequencies
+      }
+      
       if(band >= 0 && band < 8) {
-        int abs_sample = cur_sample < 0 ? -cur_sample : cur_sample;
         playback->spectrum_accumulators[band] += abs_sample;
       }
 
@@ -246,10 +269,29 @@ void advancePlayback(GsmPlaybackTracker *playback, GsmPlaybackInputMapping *mapp
       *dst_pos++ = cur_sample >> 8;
       playback->last_sample = cur_sample;
       
-      // Accumulate spectrum data for sample 2
-      band = ((playback->decode_pos - 1) * 8) / 160;
+      // Apply same enhanced frequency mapping for sample 2
+      pos = playback->decode_pos - 1;
+      abs_sample = cur_sample < 0 ? -cur_sample : cur_sample;
+      
+      if(pos < 20) {
+        band = 0;
+      } else if(pos < 40) {
+        band = abs_sample > 8000 ? 1 : 0;
+      } else if(pos < 60) {
+        band = abs_sample > 6000 ? 2 : 1;
+      } else if(pos < 80) {
+        band = abs_sample > 4000 ? 3 : 2;
+      } else if(pos < 100) {
+        band = abs_sample > 3000 ? 4 : 3;
+      } else if(pos < 120) {
+        band = abs_sample > 2000 ? 5 : 4;
+      } else if(pos < 140) {
+        band = abs_sample > 1500 ? 6 : 5;
+      } else {
+        band = abs_sample > 1000 ? 7 : 6;
+      }
+      
       if(band >= 0 && band < 8) {
-        int abs_sample = cur_sample < 0 ? -cur_sample : cur_sample;
         playback->spectrum_accumulators[band] += abs_sample;
       }
 
@@ -258,10 +300,29 @@ void advancePlayback(GsmPlaybackTracker *playback, GsmPlaybackInputMapping *mapp
       *dst_pos++ = cur_sample >> 8;
       playback->last_sample = cur_sample;
       
-      // Accumulate spectrum data for sample 3
-      band = ((playback->decode_pos - 1) * 8) / 160;
+      // Apply same enhanced frequency mapping for sample 3
+      pos = playback->decode_pos - 1;
+      abs_sample = cur_sample < 0 ? -cur_sample : cur_sample;
+      
+      if(pos < 20) {
+        band = 0;
+      } else if(pos < 40) {
+        band = abs_sample > 8000 ? 1 : 0;
+      } else if(pos < 60) {
+        band = abs_sample > 6000 ? 2 : 1;
+      } else if(pos < 80) {
+        band = abs_sample > 4000 ? 3 : 2;
+      } else if(pos < 100) {
+        band = abs_sample > 3000 ? 4 : 3;
+      } else if(pos < 120) {
+        band = abs_sample > 2000 ? 5 : 4;
+      } else if(pos < 140) {
+        band = abs_sample > 1500 ? 6 : 5;
+      } else {
+        band = abs_sample > 1000 ? 7 : 6;
+      }
+      
       if(band >= 0 && band < 8) {
-        int abs_sample = cur_sample < 0 ? -cur_sample : cur_sample;
         playback->spectrum_accumulators[band] += abs_sample;
       }
 
@@ -270,10 +331,29 @@ void advancePlayback(GsmPlaybackTracker *playback, GsmPlaybackInputMapping *mapp
       *dst_pos++ = cur_sample >> 8;
       playback->last_sample = cur_sample;
       
-      // Accumulate spectrum data for sample 4
-      band = ((playback->decode_pos - 1) * 8) / 160;
+      // Apply same enhanced frequency mapping for sample 4
+      pos = playback->decode_pos - 1;
+      abs_sample = cur_sample < 0 ? -cur_sample : cur_sample;
+      
+      if(pos < 20) {
+        band = 0;
+      } else if(pos < 40) {
+        band = abs_sample > 8000 ? 1 : 0;
+      } else if(pos < 60) {
+        band = abs_sample > 6000 ? 2 : 1;
+      } else if(pos < 80) {
+        band = abs_sample > 4000 ? 3 : 2;
+      } else if(pos < 100) {
+        band = abs_sample > 3000 ? 4 : 3;
+      } else if(pos < 120) {
+        band = abs_sample > 2000 ? 5 : 4;
+      } else if(pos < 140) {
+        band = abs_sample > 1500 ? 6 : 5;
+      } else {
+        band = abs_sample > 1000 ? 7 : 6;
+      }
+      
       if(band >= 0 && band < 8) {
-        int abs_sample = cur_sample < 0 ? -cur_sample : cur_sample;
         playback->spectrum_accumulators[band] += abs_sample;
       }
       
