@@ -24,6 +24,11 @@ typedef struct GsmPlaybackTracker
   // Spectrum analyzer accumulators (8 frequency bands)
   long spectrum_accumulators[8];
   int spectrum_sample_count;
+  
+  // Bouncy bar physics (8 bars)
+  int bar_current_heights[8];  // Current display heights
+  int bar_target_heights[8];   // Target heights from audio data
+  int bar_velocities[8];       // Falling velocity for smooth decay
 } GsmPlaybackTracker;
 
 typedef struct GsmPlaybackInputMapping
