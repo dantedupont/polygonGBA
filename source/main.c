@@ -226,26 +226,24 @@ int main() {
     
     // Main loop with proper GSM timing
     while(1) {
-        // WORKING spectrum visualizer - vertical bars with height animation
-        static u32 animation_time = 0;
-        animation_time++; // Increment every frame
+        // REAL spectrum analyzer - using actual audio data accumulated during playback!
         
-        // Create 8 animated spectrum bars with different frequencies
+        // Create 8 spectrum bars from the accumulated audio data
         for(int i = 0; i < NUM_BARS; i++) {
-            // Each bar has different animation speed and phase
-            int phase = animation_time + (i * 20); // Different phase for each bar
-            int frequency_divisor = 2 + (i / 2); // Bars get slower from left to right
-            int height_wave = (phase / frequency_divisor) % 80; // 0-79 range
+            // Get the accumulated amplitude for this frequency band
+            long accumulated_amplitude = playback.spectrum_accumulators[i];
             
-            // Convert to bar height (sine-like wave)
-            int bar_height;
-            if(height_wave < 40) {
-                bar_height = height_wave; // Growing 0->39
-            } else {
-                bar_height = 80 - height_wave; // Shrinking 39->0
+            // Calculate average amplitude for this band
+            int bar_height = 8; // Minimum height
+            if(playback.spectrum_sample_count > 0) {
+                // Scale the accumulated amplitude to bar height
+                int avg_amplitude = accumulated_amplitude / (playback.spectrum_sample_count / 8);
+                bar_height = 8 + (avg_amplitude / 2000); // Scale to reasonable range
             }
             
-            bar_height = 8 + bar_height; // 8-47 pixels tall
+            // Clamp bar height to screen bounds
+            if(bar_height < 8) bar_height = 8;
+            if(bar_height > 60) bar_height = 60;
             
             // Position bars vertically (Y grows downward on GBA)
             int base_y = 110; // Bottom of bars (above text)
@@ -258,9 +256,20 @@ int main() {
             // Update sprite Y position for height effect
             OAM[i].attr0 = (OAM[i].attr0 & ~0xFF) | (new_y & 0xFF);
             
-            // Keep X positions fixed (no wobble, clean spectrum display)
+            // Keep X positions fixed - evenly spaced spectrum display
             int x = 20 + (i * 25); // Evenly spaced across screen
             OAM[i].attr1 = (OAM[i].attr1 & ~0x01FF) | (x & 0x01FF);
+        }
+        
+        // Reset spectrum accumulators periodically for fresh data
+        static int reset_counter = 0;
+        reset_counter++;
+        if(reset_counter >= 10) { // Reset every ~6 frames for smooth animation
+            reset_counter = 0;
+            for(int i = 0; i < NUM_BARS; i++) {
+                playback.spectrum_accumulators[i] = 0;
+            }
+            playback.spectrum_sample_count = 0;
         }
         
         // Use original GSMPlayer-GBA timing: 

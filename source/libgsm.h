@@ -20,6 +20,10 @@ typedef struct GsmPlaybackTracker
   int marquee_offset;
   unsigned int frames_until_marquee_update;
   u16 reel_rotation_theta;
+  
+  // Spectrum analyzer accumulators (8 frequency bands)
+  long spectrum_accumulators[8];
+  int spectrum_sample_count;
 } GsmPlaybackTracker;
 
 typedef struct GsmPlaybackInputMapping
