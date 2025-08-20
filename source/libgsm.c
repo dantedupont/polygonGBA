@@ -85,6 +85,13 @@ int initPlayback(GsmPlaybackTracker *playback)
   playback->last_sample = 0;
   playback->playing = 1;
   playback->locked = 0;
+  
+  // Initialize spectrum analyzer
+  for(int i = 0; i < 8; i++) {
+    playback->spectrum_accumulators[i] = 0;
+  }
+  playback->spectrum_sample_count = 0;
+  
   return 0;
 }
 
@@ -225,21 +232,52 @@ void advancePlayback(GsmPlaybackTracker *playback, GsmPlaybackInputMapping *mapp
       *dst_pos++ = (playback->last_sample + cur_sample) >> 9;
       *dst_pos++ = cur_sample >> 8;
       playback->last_sample = cur_sample;
+      
+      // Accumulate spectrum data with zero CPU overhead
+      // Map decode_pos to one of 8 frequency bands
+      int band = ((playback->decode_pos - 1) * 8) / 160;
+      if(band >= 0 && band < 8) {
+        int abs_sample = cur_sample < 0 ? -cur_sample : cur_sample;
+        playback->spectrum_accumulators[band] += abs_sample;
+      }
 
       cur_sample = out_samples[playback->decode_pos++];
       *dst_pos++ = (playback->last_sample + cur_sample) >> 9;
       *dst_pos++ = cur_sample >> 8;
       playback->last_sample = cur_sample;
+      
+      // Accumulate spectrum data for sample 2
+      band = ((playback->decode_pos - 1) * 8) / 160;
+      if(band >= 0 && band < 8) {
+        int abs_sample = cur_sample < 0 ? -cur_sample : cur_sample;
+        playback->spectrum_accumulators[band] += abs_sample;
+      }
 
       cur_sample = out_samples[playback->decode_pos++];
       *dst_pos++ = (playback->last_sample + cur_sample) >> 9;
       *dst_pos++ = cur_sample >> 8;
       playback->last_sample = cur_sample;
+      
+      // Accumulate spectrum data for sample 3
+      band = ((playback->decode_pos - 1) * 8) / 160;
+      if(band >= 0 && band < 8) {
+        int abs_sample = cur_sample < 0 ? -cur_sample : cur_sample;
+        playback->spectrum_accumulators[band] += abs_sample;
+      }
 
       cur_sample = out_samples[playback->decode_pos++];
       *dst_pos++ = (playback->last_sample + cur_sample) >> 9;
       *dst_pos++ = cur_sample >> 8;
       playback->last_sample = cur_sample;
+      
+      // Accumulate spectrum data for sample 4
+      band = ((playback->decode_pos - 1) * 8) / 160;
+      if(band >= 0 && band < 8) {
+        int abs_sample = cur_sample < 0 ? -cur_sample : cur_sample;
+        playback->spectrum_accumulators[band] += abs_sample;
+      }
+      
+      playback->spectrum_sample_count += 4; // We processed 4 samples this iteration
     }
   }
 }
