@@ -27,4 +27,7 @@ void init_font_tiles();
 //   text: Null-terminated string to render
 void draw_text_tiles(int tile_x, int tile_y, const char* text);
 
+// ARM assembly optimized multiplication for GSM codec
+extern int gsm_mult_r_asm(int a, int b);
+
 #endif // FONT_H
