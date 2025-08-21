@@ -30,7 +30,7 @@ CFLAGS	:=	-g -Wall -O2\
  			-mcpu=arm7tdmi -mtune=arm7tdmi\
 			$(ARCH)
 
-CFLAGS	+=	$(INCLUDE)
+CFLAGS	+=	$(INCLUDE) $(EXTRA_CFLAGS)
 
 LDFLAGS	=	-g $(ARCH) -Wl,-Map,$(notdir $*.map)
 

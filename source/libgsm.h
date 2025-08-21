@@ -43,6 +43,7 @@ typedef struct GsmPlaybackInputMapping
 
 extern struct GsmPlaybackInputMapping DEFAULT_PLAYBACK_INPUT_MAPPING;
 
+int initGBFS(void);
 int initPlayback(GsmPlaybackTracker *playback);
 
 void advancePlayback(GsmPlaybackTracker *playback, GsmPlaybackInputMapping *mapping);

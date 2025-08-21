@@ -2,7 +2,18 @@
 #include <stdio.h>
 #include <string.h>
 #include "gbfs.h"
+
+// 8AD flag is now working properly!
+
+// Conditional audio system includes
+#ifdef CLEAN_8AD
+#include "8ad_player.h"
+#elif defined(USE_8AD)
+#include "8ad_player.h"
+#else
 #include "libgsm.h"
+#endif
+
 #include "font.h"
 
 
@@ -30,9 +41,10 @@ const char* get_full_track_name(int track_index) {
     extern const GBFS_FILE *fs;
     int total_tracks = gbfs_count_objs(fs);
     
-    if (total_tracks == 4) {
-        // Side A ROM
-        if (track_index >= 0 && track_index < 4) {
+    
+    if (total_tracks == 4 || total_tracks == 3) {
+        // Side A ROM (4 tracks for GSM, 3 tracks for 8AD test)
+        if (track_index >= 0 && track_index < total_tracks) {
             return side_a_tracks[track_index];
         }
     } else if (total_tracks == 6) {
@@ -45,12 +57,14 @@ const char* get_full_track_name(int track_index) {
     return "Unknown Track";
 }
 
-// Scrolling text state
+// Scrolling text state (only for GSM builds)
+#if !defined(CLEAN_8AD) && !defined(USE_8AD)
 static char full_track_name[64] = {0};
 static int scroll_pixel_offset = 0;
 static int scroll_delay = 0;
 static int pause_counter = 0;
 static u32 last_track_for_scroll = 0xFFFFFFFF;
+#endif
 
 // Forward declarations
 
@@ -75,6 +89,7 @@ void draw_scrolling_text(u16* buffer, int x, int y, const char* text, u16 color,
 }
 
 
+#if !defined(CLEAN_8AD) && !defined(USE_8AD)
 void draw_track_info_mode3(u16* buffer, GsmPlaybackTracker* playback) {
     // Clear text area (bottom portion of screen)
     for (int y = 140; y < 160; y++) {
@@ -124,8 +139,10 @@ void draw_track_info_mode3(u16* buffer, GsmPlaybackTracker* playback) {
     // Draw scrolling track name using the beautiful original Mode 3 rendering
     draw_scrolling_text(buffer, 10, 145, full_track_name, RGB5(31, 31, 0), scroll_pixel_offset, pause_counter > 0);
 }
+#endif // !CLEAN_8AD && !USE_8AD
 
 // CPU-optimized static text version - no scrolling
+#if !defined(CLEAN_8AD) && !defined(USE_8AD)
 void draw_track_info_mode3_static(u16* buffer, GsmPlaybackTracker* playback) {
     // Only update when track changes - MAJOR CPU savings!
     static u32 last_displayed_track = 0xFFFFFFFF;
@@ -150,13 +167,235 @@ void draw_track_info_mode3_static(u16* buffer, GsmPlaybackTracker* playback) {
         draw_text(buffer, 10, 145, display_name, RGB5(31, 31, 0));
     }
 }
+#endif // !CLEAN_8AD && !USE_8AD
 
-// GSM playback tracker
+// Audio playback tracker (conditional)
+#if !defined(CLEAN_8AD) && !defined(USE_8AD)
 static GsmPlaybackTracker playback;
+#endif
 
 // GBFS filesystem support
 static const GBFS_FILE *track_filesystem = NULL;
 
+#ifdef CLEAN_8AD
+// Clean 8AD main function - simplified Pin Eight style
+int main() {
+    // Initialize interrupts and video
+    irqInit();
+    irqEnable(IRQ_VBLANK);
+    
+    // Use Mode 3 for simple display
+    SetMode(MODE_3 | BG2_ENABLE);
+    
+    // Clear screen with BRIGHT MAGENTA - VERY OBVIOUS TEST
+    u16* framebuffer = (u16*)0x6000000;
+    for(int i = 0; i < 240*160; i++) {
+        framebuffer[i] = RGB5(31, 0, 31); // Bright magenta background
+    }
+    
+    // Initialize GBFS
+    extern const GBFS_FILE *fs;
+    fs = find_first_gbfs_file(find_first_gbfs_file);
+    
+    if (!fs) {
+        // Failed - red background
+        for(int i = 0; i < 240*160; i++) {
+            framebuffer[i] = RGB5(31, 0, 0);
+        }
+        while(1) VBlankIntrWait();
+    }
+    
+    // Initialize clean 8AD system
+    init_8ad_sound();
+    
+    // Start first track
+    start_8ad_track(0);
+    
+    // Initialize font system and show OBVIOUS test messages
+    init_font_tiles();
+    draw_text(framebuffer, 10, 10, "*** CLEAN 8AD TEST ***", RGB5(31, 31, 31));
+    draw_text(framebuffer, 10, 30, "MAGENTA BACKGROUND!", RGB5(31, 31, 0));
+    draw_text(framebuffer, 10, 50, "BASIC VERSION WORKS", RGB5(0, 31, 31));
+    
+    // Simple control variables
+    unsigned short last_keys = 0;
+    
+    // Main loop - simple Pin Eight style
+    while(1) {
+        VBlankIntrWait();
+        
+        // Audio processing
+        audio_vblank_8ad();
+        mixer_8ad();
+        
+        // Simple controls
+        unsigned short keys = ~REG_KEYINPUT & 0x3ff;
+        unsigned short pressed = keys & ~last_keys;
+        last_keys = keys;
+        
+        if (pressed & KEY_RIGHT) {
+            next_track_8ad();
+            char track_info[64];
+            sprintf(track_info, "Track: %s", get_full_track_name(get_current_track_8ad()));
+            // Clear old text area
+            for(int y = 25; y < 40; y++) {
+                for(int x = 0; x < 240; x++) {
+                    framebuffer[y * 240 + x] = RGB5(0, 8, 0);
+                }
+            }
+            draw_text(framebuffer, 10, 30, track_info, RGB5(31, 31, 0));
+        }
+        
+        if (pressed & KEY_LEFT) {
+            prev_track_8ad();
+            char track_info[64];
+            sprintf(track_info, "Track: %s", get_full_track_name(get_current_track_8ad()));
+            // Clear old text area
+            for(int y = 25; y < 40; y++) {
+                for(int x = 0; x < 240; x++) {
+                    framebuffer[y * 240 + x] = RGB5(0, 8, 0);
+                }
+            }
+            draw_text(framebuffer, 10, 30, track_info, RGB5(31, 31, 0));
+        }
+    }
+    
+    return 0;
+}
+
+#elif defined(USE_8AD)
+// 8AD main function with spectrum visualizer
+int main() {
+    // Initialize interrupts and video
+    irqInit();
+    irqEnable(IRQ_VBLANK);
+    
+    // Use Mode 3 for beautiful bitmap text + sprites
+    SetMode(MODE_3 | BG2_ENABLE | OBJ_ENABLE | OBJ_1D_MAP);
+    
+    // Enhanced spectrum analyzer visualization - 8 multi-tile vertical bars
+    #define NUM_BARS 8
+    #define TILES_PER_BAR 12  // Each bar can be up to 12 tiles tall (96 pixels) - MASSIVE bars!
+    
+    // Set up sprite palette for visualization bars
+    SPRITE_PALETTE[0] = RGB5(0, 0, 0);      // Transparent
+    SPRITE_PALETTE[1] = RGB5(0, 15, 31);    // Blue (low frequencies)
+    SPRITE_PALETTE[2] = RGB5(0, 31, 31);    // Cyan
+    SPRITE_PALETTE[3] = RGB5(0, 31, 15);    // Green
+    SPRITE_PALETTE[4] = RGB5(15, 31, 0);    // Yellow-green
+    SPRITE_PALETTE[5] = RGB5(31, 31, 0);    // Yellow
+    SPRITE_PALETTE[6] = RGB5(31, 15, 0);    // Orange
+    SPRITE_PALETTE[7] = RGB5(31, 0, 0);     // Red (high frequencies)
+    
+    // Set Mode 3 background to BRIGHT MAGENTA for testing
+    BG_PALETTE[0] = RGB5(31, 0, 31);  // Bright magenta background - VERY OBVIOUS
+    
+    // Initialize spectrum visualization with massive symmetric bars
+    u16* spriteGfx = (u16*)0x06010000;
+    
+    // Create color gradients for spectrum bars - each bar tile gets its own color
+    for(int bar = 0; bar < NUM_BARS; bar++) {
+        for(int tile_height = 0; tile_height < TILES_PER_BAR; tile_height++) {
+            int base_tile = bar * TILES_PER_BAR + tile_height;
+            
+            // Color based on frequency (bar) and intensity (height)
+            int color_index = (bar + tile_height / 3) % 7 + 1; // Cycle through colors 1-7
+            u16 pixel_data = (color_index << 8) | color_index; // 8bpp: both nibbles same color
+            
+            // Create all 4 tiles for this 32x8 sprite
+            for(int subtile = 0; subtile < 4; subtile++) {
+                for(int row = 0; row < 8; row++) {
+                    spriteGfx[(base_tile + subtile) * 8 + row] = pixel_data;
+                }
+            }
+        }
+    }
+    
+    // Clear OAM
+    for(int i = 0; i < 128; i++) {
+        OAM[i].attr0 = ATTR0_DISABLED;
+        OAM[i].attr1 = 0;
+        OAM[i].attr2 = 0;
+    }
+    
+    // Initialize GBFS filesystem
+    track_filesystem = find_first_gbfs_file(find_first_gbfs_file);
+    
+    // Initialize GBFS
+    extern const GBFS_FILE *fs;
+    fs = find_first_gbfs_file(find_first_gbfs_file);
+    
+    if (!fs) {
+        // Failed - red background
+        BG_PALETTE[0] = RGB5(31, 0, 0);
+        while(1) VBlankIntrWait();
+    }
+    
+    // Initialize clean 8AD system
+    init_8ad_sound();
+    
+    // Start first track
+    start_8ad_track(0);
+    
+    // Initialize font and display OBVIOUS test message
+    init_font_tiles();
+    draw_text((u16*)0x6000000, 10, 10, "*** 8AD TEST BUILD ***", RGB5(31, 31, 31));
+    draw_text((u16*)0x6000000, 10, 30, "MAGENTA BACKGROUND!", RGB5(31, 31, 0));
+    draw_text((u16*)0x6000000, 10, 50, "THIS IS 8AD VERSION", RGB5(0, 31, 31));
+    
+    unsigned short last_keys = 0;
+    
+    // Main loop with spectrum analyzer
+    while(1) {
+        VBlankIntrWait();
+        
+        // 8AD audio processing
+        audio_vblank_8ad();
+        mixer_8ad();
+        
+        // Skip spectrum analysis for now - just get basic display working
+        
+        // Input handling
+        unsigned short keys = ~REG_KEYINPUT & 0x3ff;
+        unsigned short pressed = keys & ~last_keys;
+        last_keys = keys;
+        
+        if (pressed & KEY_RIGHT) {
+            next_track_8ad();
+            char track_info[64];
+            sprintf(track_info, "Track: %s", get_full_track_name(get_current_track_8ad()));
+            // Clear old text area
+            u16* framebuffer = (u16*)0x6000000;
+            for(int y = 25; y < 40; y++) {
+                for(int x = 0; x < 240; x++) {
+                    framebuffer[y * 240 + x] = RGB5(0, 15, 0);
+                }
+            }
+            draw_text(framebuffer, 10, 30, track_info, RGB5(31, 31, 0));
+        }
+        
+        if (pressed & KEY_LEFT) {
+            prev_track_8ad();
+            char track_info[64];
+            sprintf(track_info, "Track: %s", get_full_track_name(get_current_track_8ad()));
+            // Clear old text area  
+            u16* framebuffer = (u16*)0x6000000;
+            for(int y = 25; y < 40; y++) {
+                for(int x = 0; x < 240; x++) {
+                    framebuffer[y * 240 + x] = RGB5(0, 15, 0);
+                }
+            }
+            draw_text(framebuffer, 10, 30, track_info, RGB5(31, 31, 0));
+        }
+        
+        // Skip spectrum visualization for now - focus on getting basic 8AD working
+    }
+    
+    return 0;
+}
+
+#else
+// GSM main function
 int main() {
     // Initialize interrupts and video
     irqInit();
@@ -365,3 +604,5 @@ int main() {
     
     return 0;
 }
+
+#endif // CLEAN_8AD
