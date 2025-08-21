@@ -67,11 +67,15 @@ const GBFS_FILE *fs;
 const unsigned char *src;
 uint32_t src_len;
 
+// Initialize GBFS filesystem (called by both GSM and 8AD paths)
+int initGBFS(void) {
+  fs = find_first_gbfs_file(find_first_gbfs_file);
+  return fs ? 0 : 1;
+}
+
 int initPlayback(GsmPlaybackTracker *playback)
 {
-  fs = find_first_gbfs_file(find_first_gbfs_file);
-  if (!fs)
-  {
+  if (initGBFS() != 0) {
     return 1;
   }
   init_sound();
