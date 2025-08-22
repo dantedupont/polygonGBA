@@ -20,7 +20,7 @@ echo "GBFS Size: $(ls -lh gbfs_content/side_b_8ad.gbfs | awk '{print $5}')"
 # Build the base ROM with 8AD support
 echo "Building base ROM with 8AD support..."
 make clean
-make EXTRA_CFLAGS="-DUSE_8AD" SOURCES_EXCLUDE="audio_playback.c"
+make
 
 # Pad the ROM to 256-byte alignment (required for GBFS)
 echo "Padding ROM for GBFS alignment..."

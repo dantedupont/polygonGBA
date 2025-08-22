@@ -1,8 +1,6 @@
 #ifndef EIGHTAD_PLAYER_H
 #define EIGHTAD_PLAYER_H
 
-#if defined(USE_8AD) || defined(CLEAN_8AD)
-
 // Initialize 8AD audio system
 void init_8ad_sound(void);
 
@@ -33,7 +31,5 @@ int test_gbfs_access(char* result_buffer);
 int test_8ad_decoder(char* result_buffer);
 int test_track_data_format(char* result_buffer);
 int test_real_decode(char* result_buffer);
-
-#endif // USE_8AD || CLEAN_8AD
 
 #endif // EIGHTAD_PLAYER_H

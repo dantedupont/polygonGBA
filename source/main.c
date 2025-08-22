@@ -2,14 +2,9 @@
 #include <stdio.h>
 #include <string.h>
 #include "gbfs.h"
-
-// PolygonGBA - 8AD Audio Visualizer
-
 // 8AD audio system
-#if defined(CLEAN_8AD) || defined(USE_8AD)
 #include "8ad_player.h"
-#include "spectrum_visualizer.h"
-#endif
+#include "visualization_manager.h"
 
 #include "font.h"
 
@@ -58,100 +53,7 @@ const char* get_full_track_name(int track_index) {
 }
 
 
-
-
-
-
-
-
-#ifdef CLEAN_8AD
-// Clean 8AD main function - simplified Pin Eight style
-int main() {
-    // Initialize interrupts and video
-    irqInit();
-    irqEnable(IRQ_VBLANK);
-    
-    // Use Mode 3 for simple display
-    SetMode(MODE_3 | BG2_ENABLE);
-    
-    // Clear screen with BRIGHT MAGENTA - VERY OBVIOUS TEST
-    u16* framebuffer = (u16*)0x6000000;
-    for(int i = 0; i < 240*160; i++) {
-        framebuffer[i] = RGB5(31, 0, 31); // Bright magenta background
-    }
-    
-    // Initialize GBFS
-    extern const GBFS_FILE *fs;
-    fs = find_first_gbfs_file(find_first_gbfs_file);
-    
-    if (!fs) {
-        // Failed - red background
-        for(int i = 0; i < 240*160; i++) {
-            framebuffer[i] = RGB5(31, 0, 0);
-        }
-        while(1) VBlankIntrWait();
-    }
-    
-    // Initialize clean 8AD system
-    init_8ad_sound();
-    
-    // Start first track
-    start_8ad_track(0);
-    
-    // Initialize font system and show OBVIOUS test messages
-    init_font_tiles();
-    draw_text(framebuffer, 10, 10, "*** CLEAN 8AD TEST ***", RGB5(31, 31, 31));
-    draw_text(framebuffer, 10, 30, "MAGENTA BACKGROUND!", RGB5(31, 31, 0));
-    draw_text(framebuffer, 10, 50, "BASIC VERSION WORKS", RGB5(0, 31, 31));
-    
-    // Simple control variables
-    unsigned short last_keys = 0;
-    
-    // Main loop - simple Pin Eight style
-    while(1) {
-        VBlankIntrWait();
-        
-        // Audio processing
-        audio_vblank_8ad();
-        mixer_8ad();
-        
-        // Simple controls
-        unsigned short keys = ~REG_KEYINPUT & 0x3ff;
-        unsigned short pressed = keys & ~last_keys;
-        last_keys = keys;
-        
-        if (pressed & KEY_RIGHT) {
-            next_track_8ad();
-            char track_info[64];
-            sprintf(track_info, "Track: %s", get_full_track_name(get_current_track_8ad()));
-            // Clear old text area
-            for(int y = 25; y < 40; y++) {
-                for(int x = 0; x < 240; x++) {
-                    framebuffer[y * 240 + x] = RGB5(0, 8, 0);
-                }
-            }
-            draw_text(framebuffer, 10, 30, track_info, RGB5(31, 31, 0));
-        }
-        
-        if (pressed & KEY_LEFT) {
-            prev_track_8ad();
-            char track_info[64];
-            sprintf(track_info, "Track: %s", get_full_track_name(get_current_track_8ad()));
-            // Clear old text area
-            for(int y = 25; y < 40; y++) {
-                for(int x = 0; x < 240; x++) {
-                    framebuffer[y * 240 + x] = RGB5(0, 8, 0);
-                }
-            }
-            draw_text(framebuffer, 10, 30, track_info, RGB5(31, 31, 0));
-        }
-    }
-    
-    return 0;
-}
-
-#elif defined(USE_8AD)
-// 8AD main function with spectrum visualizer
+// Main function with 8AD audio and spectrum visualizer
 int main() {
     // Initialize interrupts and video
     irqInit();
@@ -166,8 +68,8 @@ int main() {
         framebuffer[i] = RGB5(0, 0, 0); // Black background
     }
     
-    // Initialize spectrum visualizer
-    init_spectrum_visualizer();
+    // Initialize visualization manager
+    init_visualization_manager();
     
     
     // Initialize GBFS
@@ -213,20 +115,26 @@ int main() {
             prev_track_8ad();
         }
         
-        // Update spectrum analysis and render bars
-        update_spectrum_visualizer();
-        render_spectrum_bars();
+        // Handle visualization switching (UP/DOWN)
+        handle_visualization_controls(pressed);
         
-        // Display track title
+        // Update and render current visualization
+        update_current_visualization();
+        render_current_visualization();
+        
+        // Display track title and visualization info
         static int last_displayed_track = -1;
+        static int last_displayed_viz = 0; // VIZ_SPECTRUM_BARS
         int current_track_num = get_current_track_8ad();
+        int current_viz = get_current_visualization();
         
-        if (current_track_num != last_displayed_track) {
+        if (current_track_num != last_displayed_track || current_viz != last_displayed_viz) {
             last_displayed_track = current_track_num;
+            last_displayed_viz = current_viz;
             
             // Clear and draw blue background for track title
             u16* framebuffer = (u16*)0x6000000;
-            for (int y = 140; y < 160; y++) {
+            for (int y = 130; y < 155; y++) {
                 for (int x = 0; x < 240; x++) {
                     framebuffer[y * 240 + x] = RGB5(0, 0, 15); // Blue background
                 }
@@ -234,7 +142,11 @@ int main() {
             
             // Draw track title
             const char* track_name = get_full_track_name(current_track_num);
-            draw_text(framebuffer, 10, 145, track_name, RGB5(31, 31, 0)); // Yellow text
+            draw_text(framebuffer, 10, 135, track_name, RGB5(31, 31, 0)); // Yellow text
+            
+            // Draw visualization name  
+            const char* viz_name = get_visualization_name(current_viz);
+            draw_text(framebuffer, 10, 145, viz_name, RGB5(15, 31, 15)); // Light green text
         }
     }
     
@@ -242,4 +154,3 @@ int main() {
 }
 
 
-#endif // CLEAN_8AD / USE_8AD

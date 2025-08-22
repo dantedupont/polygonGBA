@@ -8,8 +8,10 @@ static int bar_target_heights[NUM_BARS] = {8,8,8,8,8,8,8,8};
 static int bar_velocities[NUM_BARS] = {0,0,0,0,0,0,0,0};
 static long previous_amplitudes[NUM_BARS] = {0};
 static int adaptive_scale = 1000; // Dynamic scaling factor
+static bool is_initialized = false;
 
 void init_spectrum_visualizer(void) {
+    if (is_initialized) return; // Prevent double initialization
     // Set up sprite palette for spectrum bars
     SPRITE_PALETTE[0] = RGB5(0, 0, 0);      // Transparent
     SPRITE_PALETTE[1] = RGB5(0, 15, 31);    // Blue (low frequencies)
@@ -52,6 +54,31 @@ void init_spectrum_visualizer(void) {
         OAM[i].attr1 = 0;
         OAM[i].attr2 = 0;
     }
+    
+    is_initialized = true;
+}
+
+void cleanup_spectrum_visualizer(void) {
+    if (!is_initialized) return;
+    
+    // Clear all OAM entries used by spectrum visualizer
+    for(int i = 0; i < 128; i++) {
+        OAM[i].attr0 = ATTR0_DISABLED;
+        OAM[i].attr1 = 0;
+        OAM[i].attr2 = 0;
+    }
+    
+    // Reset state variables
+    reset_counter = 0;
+    for(int i = 0; i < NUM_BARS; i++) {
+        bar_current_heights[i] = 8;
+        bar_target_heights[i] = 8;
+        bar_velocities[i] = 0;
+        previous_amplitudes[i] = 0;
+    }
+    adaptive_scale = 1000;
+    
+    is_initialized = false;
 }
 
 void update_spectrum_visualizer(void) {
