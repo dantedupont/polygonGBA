@@ -4,7 +4,7 @@
 #include "gbfs.h"
 // 8AD audio system
 #include "8ad_player.h"
-#include "spectrum_visualizer.h"
+#include "visualization_manager.h"
 
 #include "font.h"
 
@@ -68,8 +68,8 @@ int main() {
         framebuffer[i] = RGB5(0, 0, 0); // Black background
     }
     
-    // Initialize spectrum visualizer
-    init_spectrum_visualizer();
+    // Initialize visualization manager
+    init_visualization_manager();
     
     
     // Initialize GBFS
@@ -115,20 +115,26 @@ int main() {
             prev_track_8ad();
         }
         
-        // Update spectrum analysis and render bars
-        update_spectrum_visualizer();
-        render_spectrum_bars();
+        // Handle visualization switching (UP/DOWN)
+        handle_visualization_controls(pressed);
         
-        // Display track title
+        // Update and render current visualization
+        update_current_visualization();
+        render_current_visualization();
+        
+        // Display track title and visualization info
         static int last_displayed_track = -1;
+        static int last_displayed_viz = 0; // VIZ_SPECTRUM_BARS
         int current_track_num = get_current_track_8ad();
+        int current_viz = get_current_visualization();
         
-        if (current_track_num != last_displayed_track) {
+        if (current_track_num != last_displayed_track || current_viz != last_displayed_viz) {
             last_displayed_track = current_track_num;
+            last_displayed_viz = current_viz;
             
             // Clear and draw blue background for track title
             u16* framebuffer = (u16*)0x6000000;
-            for (int y = 140; y < 160; y++) {
+            for (int y = 130; y < 155; y++) {
                 for (int x = 0; x < 240; x++) {
                     framebuffer[y * 240 + x] = RGB5(0, 0, 15); // Blue background
                 }
@@ -136,7 +142,11 @@ int main() {
             
             // Draw track title
             const char* track_name = get_full_track_name(current_track_num);
-            draw_text(framebuffer, 10, 145, track_name, RGB5(31, 31, 0)); // Yellow text
+            draw_text(framebuffer, 10, 135, track_name, RGB5(31, 31, 0)); // Yellow text
+            
+            // Draw visualization name  
+            const char* viz_name = get_visualization_name(current_viz);
+            draw_text(framebuffer, 10, 145, viz_name, RGB5(15, 31, 15)); // Light green text
         }
     }
     
