@@ -5,6 +5,7 @@
 // 8AD audio system
 #include "8ad_player.h"
 #include "spectrum_visualizer.h"
+#include "waveform_visualizer.h"
 
 #include "font.h"
 
@@ -93,6 +94,10 @@ int main() {
     
     unsigned short last_keys = 0;
     
+    // Visualization mode (0=spectrum, 1=waveform)
+    int visualization_mode = 0;
+    int last_viz_mode = -1;
+    
     // Main loop with spectrum analyzer
     while(1) {
         VBlankIntrWait();
@@ -115,20 +120,55 @@ int main() {
             prev_track_8ad();
         }
         
-        // Update spectrum analysis and render bars
-        update_spectrum_visualizer();
-        render_spectrum_bars();
+        // Handle visualization switching
+        if (pressed & KEY_UP) {
+            visualization_mode = (visualization_mode + 1) % 2; // 0=spectrum, 1=waveform
+        }
         
-        // Display track title
+        if (pressed & KEY_DOWN) {
+            visualization_mode = (visualization_mode - 1 + 2) % 2;
+        }
+        
+        // Handle visualization mode switching
+        if (visualization_mode != last_viz_mode) {
+            // Clean up previous visualization
+            if (last_viz_mode == 0) {
+                cleanup_spectrum_visualizer();
+            } else if (last_viz_mode == 1) {
+                cleanup_waveform_visualizer();
+            }
+            
+            // Initialize new visualization
+            if (visualization_mode == 0) {
+                init_spectrum_visualizer();
+            } else if (visualization_mode == 1) {
+                init_waveform_visualizer();
+            }
+            
+            last_viz_mode = visualization_mode;
+        }
+        
+        // Update and render current visualization
+        if (visualization_mode == 0) {
+            update_spectrum_visualizer();
+            render_spectrum_bars();
+        } else if (visualization_mode == 1) {
+            update_waveform_visualizer();
+            render_waveform();
+        }
+        
+        // Display track title and visualization info
         static int last_displayed_track = -1;
+        static int last_displayed_viz = -1;
         int current_track_num = get_current_track_8ad();
         
-        if (current_track_num != last_displayed_track) {
+        if (current_track_num != last_displayed_track || visualization_mode != last_displayed_viz) {
             last_displayed_track = current_track_num;
+            last_displayed_viz = visualization_mode;
             
-            // Clear and draw blue background for track title
+            // Clear and draw blue background for info area
             u16* framebuffer = (u16*)0x6000000;
-            for (int y = 140; y < 160; y++) {
+            for (int y = 130; y < 155; y++) {
                 for (int x = 0; x < 240; x++) {
                     framebuffer[y * 240 + x] = RGB5(0, 0, 15); // Blue background
                 }
@@ -136,7 +176,11 @@ int main() {
             
             // Draw track title
             const char* track_name = get_full_track_name(current_track_num);
-            draw_text(framebuffer, 10, 145, track_name, RGB5(31, 31, 0)); // Yellow text
+            draw_text(framebuffer, 10, 135, track_name, RGB5(31, 31, 0)); // Yellow text
+            
+            // Draw visualization name
+            const char* viz_name = (visualization_mode == 0) ? "Spectrum Bars" : "Waveform";
+            draw_text(framebuffer, 10, 145, viz_name, RGB5(15, 31, 15)); // Light green text
         }
     }
     

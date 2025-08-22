@@ -9,6 +9,9 @@
 // Initialize the spectrum visualizer
 void init_spectrum_visualizer(void);
 
+// Cleanup the spectrum visualizer (for switching)
+void cleanup_spectrum_visualizer(void);
+
 // Update spectrum analysis and bar physics (call every 4 frames)
 void update_spectrum_visualizer(void);
 
