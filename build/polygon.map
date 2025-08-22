@@ -1588,16 +1588,16 @@ Linker script and memory map
  .debug_abbrev  0x00000d73      0x21f /opt/devkitpro/libgba/lib/libgba.a(interrupt.o)
  .debug_abbrev  0x00000f92       0x14 /opt/devkitpro/libgba/lib/libgba.a(InterruptDispatcher.o)
 
-.debug_line     0x00000000     0x2590
+.debug_line     0x00000000     0x259d
  *(.debug_line)
  .debug_line    0x00000000      0x1eb 8ad_decoder.o
  .debug_line    0x000001eb      0x6b0 8ad_player.o
  .debug_line    0x0000089b      0x3c9 font.o
  .debug_line    0x00000c64      0x30c libgbfs.o
- .debug_line    0x00000f70      0x3d1 main.o
- .debug_line    0x00001341      0x887 spectrum_visualizer.o
- .debug_line    0x00001bc8      0x950 /opt/devkitpro/libgba/lib/libgba.a(interrupt.o)
- .debug_line    0x00002518       0x78 /opt/devkitpro/libgba/lib/libgba.a(InterruptDispatcher.o)
+ .debug_line    0x00000f70      0x3de main.o
+ .debug_line    0x0000134e      0x887 spectrum_visualizer.o
+ .debug_line    0x00001bd5      0x950 /opt/devkitpro/libgba/lib/libgba.a(interrupt.o)
+ .debug_line    0x00002525       0x78 /opt/devkitpro/libgba/lib/libgba.a(InterruptDispatcher.o)
 
 .debug_frame    0x00000000      0x454
  *(.debug_frame)

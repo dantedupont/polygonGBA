@@ -1,4 +1,3 @@
-#if defined(USE_8AD) || defined(CLEAN_8AD)
 
 #include <gba.h>
 #include <stdlib.h>
@@ -291,4 +290,3 @@ int test_real_decode(char* result_buffer)
   return 1;
 }
 
-#endif // USE_8AD || CLEAN_8AD
