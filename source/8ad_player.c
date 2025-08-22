@@ -27,6 +27,15 @@ static int playing = 0;
 static const unsigned char *track_data_start;
 static const unsigned char *track_data_end;
 
+// Real frequency analysis for visualizer  
+long spectrum_accumulators_8ad[8] = {0};
+int spectrum_sample_count_8ad = 0;
+
+// Simple frequency filters for real frequency analysis
+int bass_filter_state = 0;
+int mid_filter_state = 0;
+int treble_filter_state = 0;
+
 // Audio system (simplified from Pin Eight)
 static void dsound_switch_buffers(const signed char *src)
 {
@@ -87,6 +96,53 @@ void mixer_8ad(void)
     // Decode exactly MIXBUF_SIZE samples from AUDIO_FRAME_BYTES bytes
     decode_ad(&ad, mixbuf[cur_mixbuf], ad.data, MIXBUF_SIZE);
     ad.data += AUDIO_FRAME_BYTES;
+    
+    // FAST balanced frequency analysis - optimized for GBA performance
+    static int low_pass = 0; // Single low-pass for bass
+    static int prev_sample = 0;
+    
+    for (int i = 0; i < MIXBUF_SIZE; i++) {
+      int sample = mixbuf[cur_mixbuf][i];
+      int abs_sample = (sample < 0) ? -sample : sample;
+      
+      // Simple but effective filtering
+      low_pass += (sample - low_pass) >> 3; // Bass filter
+      int bass_content = (low_pass < 0) ? -low_pass : low_pass;
+      int treble_content = (sample - prev_sample);
+      if (treble_content < 0) treble_content = -treble_content;
+      
+      prev_sample = sample;
+      
+      // FAST balanced distribution - keep the energy spread but simpler
+      
+      // Bass bands get bass content + baseline boost
+      spectrum_accumulators_8ad[0] += bass_content + (bass_content >> 1) + (abs_sample >> 6); // Sub-bass
+      spectrum_accumulators_8ad[1] += bass_content + (abs_sample >> 5); // Bass
+      
+      // Mid-bass and low-mid get mixed content
+      spectrum_accumulators_8ad[2] += (bass_content >> 1) + (abs_sample >> 2); // Bass-mid
+      spectrum_accumulators_8ad[3] += abs_sample - (bass_content >> 2); // Low-mid
+      
+      // Pure mid gets raw signal
+      spectrum_accumulators_8ad[4] += abs_sample; // Mid
+      
+      // High-mid and treble get treble content + baseline boost  
+      spectrum_accumulators_8ad[5] += (abs_sample >> 1) + (treble_content >> 1); // High-mid
+      spectrum_accumulators_8ad[6] += treble_content + (abs_sample >> 5); // Treble
+      spectrum_accumulators_8ad[7] += treble_content + (treble_content >> 1) + (abs_sample >> 6); // High treble
+      
+      // Simple baseline activity for all bands - single loop
+      int baseline = abs_sample >> 7;
+      spectrum_accumulators_8ad[0] += baseline;
+      spectrum_accumulators_8ad[1] += baseline;
+      spectrum_accumulators_8ad[2] += baseline;
+      spectrum_accumulators_8ad[3] += baseline;
+      spectrum_accumulators_8ad[4] += baseline;
+      spectrum_accumulators_8ad[5] += baseline;
+      spectrum_accumulators_8ad[6] += baseline;
+      spectrum_accumulators_8ad[7] += baseline;
+    }
+    spectrum_sample_count_8ad += MIXBUF_SIZE;
   } else {
     // End of track - fill with silence
     memset(mixbuf[cur_mixbuf], 0, MIXBUF_SIZE);
