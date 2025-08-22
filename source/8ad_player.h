@@ -19,6 +19,15 @@ void audio_vblank_8ad(void);
 int get_current_track_8ad(void);
 int is_playing_8ad(void);
 
+// Real frequency analysis for visualizer
+extern long spectrum_accumulators_8ad[8];
+extern int spectrum_sample_count_8ad;
+
+// Simple frequency filters for real frequency analysis
+extern int bass_filter_state;
+extern int mid_filter_state;
+extern int treble_filter_state;
+
 // Debug unit tests
 int test_gbfs_access(char* result_buffer);
 int test_8ad_decoder(char* result_buffer);
