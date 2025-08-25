@@ -7,8 +7,9 @@
 typedef enum {
     VIZ_SPECTRUM_BARS = 0,
     VIZ_WAVEFORM = 1,
-    VIZ_PARTICLES = 2,
-    VIZ_OSCILLOSCOPE = 3,
+    VIZ_GEOMETRIC = 2,
+    VIZ_PARTICLES = 3,
+    VIZ_OSCILLOSCOPE = 4,
     NUM_VISUALIZATIONS
 } VisualizationMode;
 
