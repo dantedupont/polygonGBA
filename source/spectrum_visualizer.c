@@ -78,6 +78,24 @@ void cleanup_spectrum_visualizer(void) {
     }
     adaptive_scale = 1000;
     
+    // Clear framebuffer area to remove any waveform artifacts
+    u16* framebuffer = (u16*)0x6000000;
+    u16 bg_color = RGB5(0, 0, 0);  // BLACK background (original)
+    
+    // Clear the area where waveform might have drawn (center portion of screen)
+    int start_x = (240 - 220) / 2;  // WAVEFORM_WIDTH = 220
+    int center_y = 65;
+    
+    for (int y = center_y - 60; y <= center_y + 60; y++) {
+        if (y >= 0 && y < 160) {
+            for (int x = start_x; x < start_x + 220; x++) {
+                if (x >= 0 && x < 240) {
+                    framebuffer[y * 240 + x] = bg_color;
+                }
+            }
+        }
+    }
+    
     is_initialized = false;
 }
 

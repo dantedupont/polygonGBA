@@ -5,6 +5,8 @@
 // 8AD audio system
 #include "8ad_player.h"
 #include "visualization_manager.h"
+#include "spectrum_visualizer.h"
+#include "waveform_visualizer.h"
 
 #include "font.h"
 
@@ -93,6 +95,10 @@ int main() {
     
     unsigned short last_keys = 0;
     
+    // Visualization mode (0=spectrum, 1=waveform)
+    int visualization_mode = 0;
+    int last_viz_mode = -1;
+    
     // Main loop with spectrum analyzer
     while(1) {
         VBlankIntrWait();
@@ -132,7 +138,7 @@ int main() {
             last_displayed_track = current_track_num;
             last_displayed_viz = current_viz;
             
-            // Clear and draw blue background for track title
+            // Clear and draw blue background for info area
             u16* framebuffer = (u16*)0x6000000;
             for (int y = 130; y < 155; y++) {
                 for (int x = 0; x < 240; x++) {

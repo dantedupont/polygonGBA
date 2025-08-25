@@ -1,5 +1,6 @@
 #include "visualization_manager.h"
 #include "spectrum_visualizer.h"
+#include "waveform_visualizer.h"
 // TODO: Add other visualization includes as we create them
 
 // Current visualization state
@@ -32,7 +33,7 @@ static void cleanup_visualization(VisualizationMode mode) {
             cleanup_spectrum_visualizer();
             break;
         case VIZ_WAVEFORM:
-            // TODO: cleanup_waveform_visualizer();
+            cleanup_waveform_visualizer();
             break;
         case VIZ_PARTICLES:
             // TODO: cleanup_particle_visualizer();
@@ -51,7 +52,7 @@ static void init_visualization(VisualizationMode mode) {
             init_spectrum_visualizer();
             break;
         case VIZ_WAVEFORM:
-            // TODO: init_waveform_visualizer();
+            init_waveform_visualizer();
             break;
         case VIZ_PARTICLES:
             // TODO: init_particle_visualizer();
@@ -103,7 +104,9 @@ void update_current_visualization(void) {
             update_spectrum_visualizer();
             break;
         case VIZ_WAVEFORM:
-            // TODO: update_waveform_visualizer();
+            // For waveform mode: update waveform FIRST, then spectrum processing
+            update_waveform_visualizer();  // Read spectrum data before it's reset
+            update_spectrum_visualizer();  // Process and reset spectrum data
             break;
         case VIZ_PARTICLES:
             // TODO: update_particle_visualizer();
@@ -124,7 +127,7 @@ void render_current_visualization(void) {
             render_spectrum_bars();
             break;
         case VIZ_WAVEFORM:
-            // TODO: render_waveform();
+            render_waveform();
             break;
         case VIZ_PARTICLES:
             // TODO: render_particles();
