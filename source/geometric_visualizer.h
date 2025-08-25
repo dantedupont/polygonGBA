@@ -3,13 +3,13 @@
 
 #include <gba.h>
 
-// Geometric visualizer configuration - Mode 4 sprite-based
-#define MAX_GEOMETRIC_SPRITES 32    // Maximum sprites for hexagon
-#define GEOMETRIC_TILE_START 512    // Use spectrum's working tile (dynamic overwrite)
-#define HEXAGON_CENTER_X 120        // Center of GBA screen
-#define HEXAGON_CENTER_Y 80         // Center of GBA screen  
-#define MIN_HEXAGON_RINGS 1         // Minimum rings for small hexagon
-#define MAX_HEXAGON_RINGS 6         // Maximum rings for large hexagon
+// Geometric visualizer configuration - BG2 hardware scaling with audio reactivity
+#define MIN_HEXAGON_RINGS 1         // Minimum rings (legacy, kept for compatibility)
+#define MAX_HEXAGON_RINGS 6         // Maximum rings (legacy, kept for compatibility)
+#define MAX_GEOMETRIC_SPRITES 25    // Legacy sprite limit (kept for cleanup function)
+#define HEXAGON_CENTER_X 120        // Center X position
+#define HEXAGON_CENTER_Y 80         // Center Y position
+#define BASE_SCALE 256              // Normal scale for BG2 hardware scaling (1.0x)
 
 // Initialize the geometric visualizer (sprite setup)
 void init_geometric_visualizer(void);

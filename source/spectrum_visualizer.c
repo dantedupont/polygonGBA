@@ -1,5 +1,6 @@
 #include "spectrum_visualizer.h"
 #include "8ad_player.h"
+#include "visualization_manager.h"
 
 // Spectrum visualizer state
 static int reset_counter = 0;
@@ -11,7 +12,10 @@ static int adaptive_scale = 1000; // Dynamic scaling factor
 static bool is_initialized = false;
 
 void init_spectrum_visualizer(void) {
-    if (is_initialized) return; // Prevent double initialization
+    if (is_initialized) return;
+    
+    // Only create sprite tiles when we're actually in spectrum mode
+    // Other modes (waveform, geometric) should have clean tile access
     // Set up sprite palette for spectrum bars
     SPRITE_PALETTE[0] = RGB5(0, 0, 0);      // Transparent
     SPRITE_PALETTE[1] = RGB5(0, 15, 31);    // Blue (low frequencies)
@@ -23,12 +27,15 @@ void init_spectrum_visualizer(void) {
     SPRITE_PALETTE[7] = RGB5(31, 0, 0);     // Red (very high frequencies)
     SPRITE_PALETTE[8] = RGB5(31, 0, 31);    // Bright magenta for bar 8
     
-    // In Mode 3, framebuffer is 0x6000000-0x6012C00, so sprites must be after that
-    u32* spriteGfx = (u32*)(0x6014000); // Safe location after Mode 3 framebuffer
-    
-    // Create 32x8 tiles for ULTRA WIDE, MASSIVE height bars with no color bleeding
-    // Each bar gets completely separate tile memory space
-    for(int bar = 0; bar < NUM_BARS; bar++) {
+    // Only create sprite tiles if we're actually in spectrum mode
+    // This allows other visualizers (waveform, geometric) to use clean tile memory
+    if (get_current_visualization() == VIZ_SPECTRUM_BARS) {
+        // In Mode 3, framebuffer is 0x6000000-0x6012C00, so sprites must be after that
+        u32* spriteGfx = (u32*)(0x6014000); // Safe location after Mode 3 framebuffer
+        
+        // Create 32x8 tiles for ULTRA WIDE, MASSIVE height bars with no color bleeding
+        // Each bar gets completely separate tile memory space
+        for(int bar = 0; bar < NUM_BARS; bar++) {
         u32 base_color = bar + 1; // Use different colors for each bar
         
         // Create 32x8 sprite data: each 32x8 sprite uses 4 consecutive 8x8 tiles
@@ -45,6 +52,7 @@ void init_spectrum_visualizer(void) {
                     spriteGfx[(base_tile + subtile) * 8 + row] = pixel_data;
                 }
             }
+        }
         }
     }
     
