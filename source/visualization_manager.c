@@ -1,6 +1,7 @@
 #include "visualization_manager.h"
 #include "spectrum_visualizer.h"
 #include "waveform_visualizer.h"
+#include "geometric_visualizer.h"
 // TODO: Add other visualization includes as we create them
 
 // Current visualization state
@@ -11,7 +12,8 @@ static bool manager_initialized = false;
 // Visualization names for display
 static const char* viz_names[NUM_VISUALIZATIONS] = {
     "Spectrum Bars",
-    "Waveform", 
+    "Waveform",
+    "Geometric",
     "Particles",
     "Oscilloscope"
 };
@@ -35,6 +37,9 @@ static void cleanup_visualization(VisualizationMode mode) {
         case VIZ_WAVEFORM:
             cleanup_waveform_visualizer();
             break;
+        case VIZ_GEOMETRIC:
+            cleanup_geometric_visualizer();
+            break;
         case VIZ_PARTICLES:
             // TODO: cleanup_particle_visualizer();
             break;
@@ -53,6 +58,9 @@ static void init_visualization(VisualizationMode mode) {
             break;
         case VIZ_WAVEFORM:
             init_waveform_visualizer();
+            break;
+        case VIZ_GEOMETRIC:
+            init_geometric_visualizer();
             break;
         case VIZ_PARTICLES:
             // TODO: init_particle_visualizer();
@@ -108,6 +116,12 @@ void update_current_visualization(void) {
             update_waveform_visualizer();  // Read spectrum data before it's reset
             update_spectrum_visualizer();  // Process and reset spectrum data
             break;
+        case VIZ_GEOMETRIC:
+            // For geometric mode: update geometric FIRST (reads spectrum data), 
+            // then spectrum processing (resets data but doesn't affect our sprites since we render after)
+            update_geometric_visualizer();
+            update_spectrum_visualizer(); // Process and reset spectrum data for next frame
+            break;
         case VIZ_PARTICLES:
             // TODO: update_particle_visualizer();
             break;
@@ -128,6 +142,9 @@ void render_current_visualization(void) {
             break;
         case VIZ_WAVEFORM:
             render_waveform();
+            break;
+        case VIZ_GEOMETRIC:
+            render_geometric_hexagon();
             break;
         case VIZ_PARTICLES:
             // TODO: render_particles();
