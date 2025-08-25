@@ -153,7 +153,9 @@ int main() {
             update_spectrum_visualizer();
             render_spectrum_bars();
         } else if (visualization_mode == 1) {
-            update_waveform_visualizer();
+            // For waveform mode: update waveform FIRST, then spectrum processing
+            update_waveform_visualizer();  // Read spectrum data before it's reset
+            update_spectrum_visualizer();  // Process and reset spectrum data
             render_waveform();
         }
         

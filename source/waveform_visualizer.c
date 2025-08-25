@@ -15,6 +15,11 @@ static bool need_clear = true;
 // Wave animation state
 static int wave_phase = 0; // For animating the wave
 static int current_amplitude = 10; // Current wave amplitude based on audio level
+static int debug_active_bands = 0; // For debug display
+static bool debug_processed_this_frame = false; // Did waveform process data this frame?
+static long debug_avg_energy = 0; // Show the actual energy value
+static long debug_scaled_energy = 0; // Show the scaled energy value
+static int smoothed_amplitude = 10; // Smoothed amplitude to reduce jitter
 
 void init_waveform_visualizer(void) {
     if (is_initialized) return;
@@ -43,12 +48,9 @@ void init_waveform_visualizer(void) {
     u32* spriteGfx = (u32*)(0x6014000); // Start of sprite graphics memory
     
     // Create a bright solid tile pattern for the waveform
-    u32 waveform_pattern = 0x11111111; // All pixels use color 1 (bright white from palette)
+    u32 waveform_pattern = 0x33333333; // All pixels use color 3 (bright green from palette)
     
-    // Create tile 0 as our waveform tile
-    for (int row = 0; row < 8; row++) {
-        spriteGfx[row] = waveform_pattern;
-    }
+    // Don't create tiles in init - we'll overwrite spectrum tiles during render
     
     // Clear OAM
     for (int i = 0; i < 128; i++) {
@@ -87,10 +89,13 @@ void cleanup_waveform_visualizer(void) {
 void update_waveform_visualizer(void) {
     if (!is_initialized) return;
     
+    debug_processed_this_frame = false; // Reset debug flag
+    
     // Sample the audio more frequently for better responsiveness
     sample_counter++;
     if (sample_counter >= 4) { // Sample every 4 frames for more responsive waveform
         sample_counter = 0;
+        debug_processed_this_frame = true; // Mark that we processed data
         
         // Get a representative audio sample from the current spectrum data
         // Use the mid-range frequencies for a good waveform representation
@@ -141,6 +146,39 @@ void update_waveform_visualizer(void) {
         // Add new sample to circular buffer
         waveform_samples[sample_index] = new_sample;
         sample_index = (sample_index + 1) % WAVEFORM_SAMPLES;
+        
+        // Update wave amplitude based on fresh spectrum data (moved from render)
+        long total_audio_energy = 0;
+        int active_bands = 0;
+        
+        for (int i = 1; i < 7; i++) { // Use main frequency bands
+            if (spectrum_accumulators_8ad[i] > 0 && spectrum_sample_count_8ad > 0) {
+                total_audio_energy += spectrum_accumulators_8ad[i] / spectrum_sample_count_8ad;
+                active_bands++;
+            }
+        }
+        
+        // Update wave amplitude based on audio level
+        if (active_bands > 0) {
+            long avg_energy = total_audio_energy / active_bands;
+            
+            // Fix integer division - multiply first, then divide
+            long scaled_energy = (avg_energy * 25) / 100;  // Much more aggressive scaling
+            current_amplitude = 5 + scaled_energy;
+            if (current_amplitude > 30) current_amplitude = 30;
+            if (current_amplitude < 5) current_amplitude = 5;
+            
+            // Save scaled energy for debug
+            debug_scaled_energy = scaled_energy;
+        } else {
+            // DEBUG: If no active bands, set amplitude to something obvious
+            current_amplitude = 15; // Should show 15 white pixels if this path is taken
+            debug_scaled_energy = 0;
+        }
+        
+        // Save for debug display
+        debug_active_bands = active_bands;
+        debug_avg_energy = (active_bands > 0) ? (total_audio_energy / active_bands) : 0;
     }
 }
 
@@ -161,7 +199,7 @@ static int choose_line_tile(int dy) {
 void render_waveform(void) {
     if (!is_initialized) return;
     
-    // Calculate current audio level from spectrum data for wave amplitude
+    // Calculate amplitude every frame for immediate reactivity
     long total_audio_energy = 0;
     int active_bands = 0;
     
@@ -172,25 +210,50 @@ void render_waveform(void) {
         }
     }
     
-    // Update wave amplitude based on audio level
+    // Update wave amplitude based on audio level with smoothing and drama
+    int target_amplitude = 2; // Nearly flat when quiet
+    
     if (active_bands > 0) {
         long avg_energy = total_audio_energy / active_bands;
-        // Scale to reasonable wave amplitude (5-30 pixels)
-        current_amplitude = 5 + (avg_energy / 2000);
-        if (current_amplitude > 30) current_amplitude = 30;
-        if (current_amplitude < 5) current_amplitude = 5;
+        // Much more dramatic scaling - from 2 pixels (flat line) to 60 pixels (big waves)
+        long scaled_energy = (avg_energy * 58) / 50;  // More aggressive scaling
+        target_amplitude = 2 + scaled_energy;
+        if (target_amplitude > 60) target_amplitude = 60; // Allow much bigger waves
+        if (target_amplitude < 2) target_amplitude = 2;   // Nearly flat minimum
+        debug_scaled_energy = scaled_energy;
+    } else {
+        debug_scaled_energy = 0;
     }
     
-    // Create waveform tile data
-    u32* spriteGfx = (u32*)(0x6014000);
-    u32 waveform_pattern = 0x11111111; // All pixels use color 1 (bright white)
+    // Smooth the amplitude changes to reduce jitter (interpolation)
+    int amplitude_diff = target_amplitude - smoothed_amplitude;
+    if (amplitude_diff > 0) {
+        // Growing: fast response for attacks
+        smoothed_amplitude += (amplitude_diff / 3) + 1;
+    } else if (amplitude_diff < 0) {
+        // Shrinking: slower decay for musical feel
+        smoothed_amplitude += amplitude_diff / 8;
+    }
     
-    // Create tile 500 as our waveform tile (4 8x8 tiles for 32x8 sprite)
-    int waveform_tile = 500;
-    for (int subtile = 0; subtile < 4; subtile++) {
-        for (int row = 0; row < 8; row++) {
-            spriteGfx[(waveform_tile + subtile) * 8 + row] = waveform_pattern;
-        }
+    // Clamp smoothed value
+    if (smoothed_amplitude > 60) smoothed_amplitude = 60;
+    if (smoothed_amplitude < 2) smoothed_amplitude = 2;
+    
+    current_amplitude = smoothed_amplitude;
+    
+    debug_active_bands = active_bands;
+    debug_avg_energy = (active_bands > 0) ? (total_audio_energy / active_bands) : 0;
+    
+    // Clean waveform display - no debug lines needed
+    
+    // Overwrite spectrum's first tiles with our green pattern
+    u32* spriteGfx = (u32*)(0x6014000);
+    u32 waveform_pattern = 0x33333333; // Green pattern
+    int waveform_tile = 512; // Use spectrum's first tile
+    
+    // Just overwrite one tile for smaller 8x8 sprites
+    for (int row = 0; row < 8; row++) {
+        spriteGfx[waveform_tile * 8 + row] = waveform_pattern;
     }
     
     // Animate wave phase for flowing effect
@@ -198,8 +261,8 @@ void render_waveform(void) {
     
     int sprite_count = 0;
     
-    // Create flowing sine wave using working sprite method
-    for (int x = 0; x < WAVEFORM_WIDTH; x += 16) { // Every 16 pixels for performance
+    // Create flowing sine wave using smaller 8x8 sprites
+    for (int x = 0; x < WAVEFORM_WIDTH; x += 8) { // Every 8 pixels for thinner wave
         // Simple sine wave calculation
         int angle = ((x + wave_phase) * 360) / 80; // Wave frequency
         angle = angle % 360;
@@ -216,16 +279,16 @@ void render_waveform(void) {
         }
         
         int start_x = (240 - WAVEFORM_WIDTH) / 2;
-        int center_y = 80;
+        int center_y = 60; // More centered vertically (screen is 160px, info area is bottom 25px)
         
         int wave_x = start_x + x;
         int wave_y = center_y + sine_value;
         
-        // Create sprite using the working method
+        // Create smaller 8x8 sprite
         if (wave_x >= 0 && wave_x < 240 && wave_y >= 0 && wave_y < 160 && sprite_count < 120) {
             OAM[sprite_count].attr0 = ATTR0_NORMAL | ATTR0_COLOR_16 | ATTR0_SQUARE | (wave_y & 0xFF);
-            OAM[sprite_count].attr1 = ATTR1_SIZE_32 | (wave_x & 0x01FF);
-            OAM[sprite_count].attr2 = ATTR2_PALETTE(0) | (512 + waveform_tile);
+            OAM[sprite_count].attr1 = ATTR1_SIZE_8 | (wave_x & 0x01FF); // 8x8 sprites instead of 32x8
+            OAM[sprite_count].attr2 = ATTR2_PALETTE(0) | waveform_tile;
             sprite_count++;
         }
     }
