@@ -17,8 +17,7 @@ main.o: /Users/dantedupont/repos/polygonGBA/source/main.c \
  /opt/devkitpro/libgba/include/gba_video.h \
  /Users/dantedupont/repos/polygonGBA/source/gbfs.h \
  /Users/dantedupont/repos/polygonGBA/source/8ad_player.h \
- /Users/dantedupont/repos/polygonGBA/source/spectrum_visualizer.h \
- /Users/dantedupont/repos/polygonGBA/source/waveform_visualizer.h \
+ /Users/dantedupont/repos/polygonGBA/source/visualization_manager.h \
  /Users/dantedupont/repos/polygonGBA/source/font.h \
  /opt/devkitpro/libgba/include/gba_types.h
 /opt/devkitpro/libgba/include/gba.h:
@@ -39,7 +38,6 @@ main.o: /Users/dantedupont/repos/polygonGBA/source/main.c \
 /opt/devkitpro/libgba/include/gba_video.h:
 /Users/dantedupont/repos/polygonGBA/source/gbfs.h:
 /Users/dantedupont/repos/polygonGBA/source/8ad_player.h:
-/Users/dantedupont/repos/polygonGBA/source/spectrum_visualizer.h:
-/Users/dantedupont/repos/polygonGBA/source/waveform_visualizer.h:
+/Users/dantedupont/repos/polygonGBA/source/visualization_manager.h:
 /Users/dantedupont/repos/polygonGBA/source/font.h:
 /opt/devkitpro/libgba/include/gba_types.h:
