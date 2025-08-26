@@ -229,22 +229,29 @@ void draw_text(u16* buffer, int x, int y, const char* text, u16 color) {
 
 // Initialize font tiles in VRAM for tile-based text rendering
 void init_font_tiles() {
-    u16* fontTiles = (u16*)CHAR_BASE_ADR(1);  // Character base 1 for text
+    // Use character base 0 starting from tile 1 (tile 0 reserved for space/background)
+    u16* fontTiles = (u16*)CHAR_BASE_ADR(0);  // Character base 0 for text
     
-    // Convert each font character to a GBA tile format
+    // Create a blank/background tile at tile 0
+    for (int i = 0; i < 16; i++) {
+        fontTiles[i] = 0x0000; // All transparent pixels
+    }
+    
+    // Convert each font character to a GBA tile format (16-color mode)
     for (int i = 0; i < 95; i++) {
         const u8* char_data = font_data[i];
-        u16* tile_dest = &fontTiles[i * 16]; // Each tile is 16 u16s (8x8 pixels, 4bpp)
+        u16* tile_dest = &fontTiles[(i + 1) * 16]; // +1 to skip tile 0, each tile is 16 u16s (8x8 pixels, 4bpp)
         
         // Convert 8x8 bitmap to 4-bit tile data
         for (int row = 0; row < 8; row++) {
             u8 bitmap_row = char_data[row];
-            u16 tile_row_low = 0;  // Pixels 0-7
-            u16 tile_row_high = 0; // Pixels 0-7 (upper nibbles)
+            u16 tile_row_low = 0;  // Pixels 0-3 (lower 4 pixels)
+            u16 tile_row_high = 0; // Pixels 4-7 (upper 4 pixels)
             
-            // Pack 8 pixels into 2 bytes (4 bits per pixel)
+            // Pack 8 pixels into 2 u16s (4 bits per pixel for 16-color mode)
             for (int px = 0; px < 8; px++) {
                 u8 pixel_color = (bitmap_row & (0x80 >> px)) ? 1 : 0; // 1 for text, 0 for transparent
+                
                 if (px < 4) {
                     tile_row_low |= (pixel_color << (px * 4));
                 } else {
@@ -252,8 +259,8 @@ void init_font_tiles() {
                 }
             }
             
-            tile_dest[row * 2] = tile_row_low;
-            tile_dest[row * 2 + 1] = tile_row_high;
+            tile_dest[row * 2] = tile_row_low;      // First 4 pixels of row
+            tile_dest[row * 2 + 1] = tile_row_high; // Last 4 pixels of row
         }
     }
 }
