@@ -16,7 +16,8 @@
  /opt/devkitpro/libgba/include/gba_timers.h \
  /opt/devkitpro/libgba/include/gba_video.h \
  /Users/dantedupont/repos/polygonGBA/source/gbfs.h \
- /Users/dantedupont/repos/polygonGBA/source/8ad_decoder.h
+ /Users/dantedupont/repos/polygonGBA/source/8ad_decoder.h \
+ /Users/dantedupont/repos/polygonGBA/source/spectrum_visualizer.h
 /opt/devkitpro/libgba/include/gba.h:
 /opt/devkitpro/libgba/include/gba_affine.h:
 /opt/devkitpro/libgba/include/gba_base.h:
@@ -35,3 +36,4 @@
 /opt/devkitpro/libgba/include/gba_video.h:
 /Users/dantedupont/repos/polygonGBA/source/gbfs.h:
 /Users/dantedupont/repos/polygonGBA/source/8ad_decoder.h:
+/Users/dantedupont/repos/polygonGBA/source/spectrum_visualizer.h:

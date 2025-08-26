@@ -4,9 +4,9 @@
 
 // Spectrum visualizer state
 static int reset_counter = 0;
-static int bar_current_heights[NUM_BARS] = {8,8,8,8,8,8,8,8};
-static int bar_target_heights[NUM_BARS] = {8,8,8,8,8,8,8,8};
-static int bar_velocities[NUM_BARS] = {0,0,0,0,0,0,0,0};
+static int bar_current_heights[NUM_BARS] = {8,8,8,8,8,8,8};
+static int bar_target_heights[NUM_BARS] = {8,8,8,8,8,8,8};
+static int bar_velocities[NUM_BARS] = {0,0,0,0,0,0,0};
 static long previous_amplitudes[NUM_BARS] = {0};
 static int adaptive_scale = 1000; // Dynamic scaling factor
 static bool is_initialized = false;
@@ -18,27 +18,29 @@ void init_spectrum_visualizer(void) {
     // MODE_1: No mode switching needed - everything uses MODE_1 now
     // SetMode already handled by main.c or visualization_manager
     
-    // Set up 8 different sprite palettes for colorful frequency bars
+    // Set up 7 different sprite palettes for colorful frequency bars spanning full spectrum
     // Each palette has 16 colors, we use color 1 for the bar color
-    for(int pal = 0; pal < 8; pal++) {
+    for(int pal = 0; pal < 7; pal++) {
         SPRITE_PALETTE[pal * 16 + 0] = RGB5(0, 0, 0);  // Transparent
         
-        // Assign different colors per frequency band
-        if (pal == 0) SPRITE_PALETTE[pal * 16 + 1] = RGB5(0, 15, 31);    // Blue (bass)
-        else if (pal == 1) SPRITE_PALETTE[pal * 16 + 1] = RGB5(0, 20, 25);    // Blue-cyan
-        else if (pal == 2) SPRITE_PALETTE[pal * 16 + 1] = RGB5(0, 31, 15);    // Green-blue 
-        else if (pal == 3) SPRITE_PALETTE[pal * 16 + 1] = RGB5(0, 31, 0);     // Green (mids)
-        else if (pal == 4) SPRITE_PALETTE[pal * 16 + 1] = RGB5(15, 31, 0);    // Yellow-green
-        else if (pal == 5) SPRITE_PALETTE[pal * 16 + 1] = RGB5(31, 31, 0);    // Yellow (highs)
-        else if (pal == 6) SPRITE_PALETTE[pal * 16 + 1] = RGB5(31, 15, 0);    // Orange
-        else if (pal == 7) SPRITE_PALETTE[pal * 16 + 1] = RGB5(31, 0, 0);     // Red (treble)
+        // Assign colors across full spectrum for 7 bars (no brown/red needed)
+        if (pal == 0) SPRITE_PALETTE[pal * 16 + 1] = RGB5(0, 10, 31);    // Deep Blue (bass)
+        else if (pal == 1) {
+            SPRITE_PALETTE[pal * 16 + 1] = RGB5(25, 0, 31);    // Bright Magenta (bass-mid) - very different from brown
+            SPRITE_PALETTE[240] = RGB5(25, 0, 31);  // DEBUG: Store Bar[1] color for verification
+        }
+        else if (pal == 2) SPRITE_PALETTE[pal * 16 + 1] = RGB5(0, 31, 10);    // Green-blue (mid-low)
+        else if (pal == 3) SPRITE_PALETTE[pal * 16 + 1] = RGB5(0, 31, 0);     // Pure Green (mid)
+        else if (pal == 4) SPRITE_PALETTE[pal * 16 + 1] = RGB5(20, 31, 0);    // Yellow-green (mid-high)
+        else if (pal == 5) SPRITE_PALETTE[pal * 16 + 1] = RGB5(31, 25, 0);    // Yellow-orange (high)
+        else if (pal == 6) SPRITE_PALETTE[pal * 16 + 1] = RGB5(31, 8, 0);     // Orange-red (treble)
     }
     
     // MODE_1: Standard sprite memory at 0x6010000, tiles 100+ (after font tiles 0-95)
     u32* spriteGfx = (u32*)0x6010000; // Standard sprite tile memory for MODE_1
     
-    // Create 8 pairs of 8x8 tiles for 16x8 spectrum bars (tiles 100-115)
-    for(int bar = 0; bar < 8; bar++) {
+    // Create 7 pairs of 8x8 tiles for 16x8 spectrum bars (tiles 100-113)
+    for(int bar = 0; bar < 7; bar++) {
         int left_tile = 100 + (bar * 2);     // Left half: 100, 102, 104, 106, 108, 110, 112, 114
         int right_tile = 100 + (bar * 2) + 1; // Right half: 101, 103, 105, 107, 109, 111, 113, 115
         u32 pixel_data = 0x11111111; // All pixels use palette color 1
@@ -62,6 +64,23 @@ void init_spectrum_visualizer(void) {
     }
     
     is_initialized = true;
+}
+
+// Reset spectrum visualizer state during track changes
+void reset_spectrum_visualizer_state(void) {
+    if (!is_initialized) return;
+    
+    // Reset all bars to baseline immediately
+    for(int i = 0; i < NUM_BARS; i++) {
+        bar_current_heights[i] = 8;
+        bar_target_heights[i] = 8;
+        bar_velocities[i] = 0;
+        previous_amplitudes[i] = 0; // CRITICAL: Clear residual amplitude memory
+    }
+    
+    // Reset adaptive scaling
+    adaptive_scale = 1000;
+    reset_counter = 0;
 }
 
 void cleanup_spectrum_visualizer(void) {
@@ -91,7 +110,7 @@ void cleanup_spectrum_visualizer(void) {
 
 void update_spectrum_visualizer(void) {
     reset_counter++;
-    if(reset_counter >= 4) {
+    if(reset_counter >= 3) { // Balanced: update every 3 frames (20Hz) - compromise between reactivity and CPU load
         reset_counter = 0;
         
         // Enhanced dynamic scaling for MAXIMUM visual drama
@@ -115,10 +134,25 @@ void update_spectrum_visualizer(void) {
                 adaptive_scale = avg_total * 3; // More aggressive scale increase
             }
             
-            // Wider clamp range for more dramatic visuals
-            if(adaptive_scale < 200) adaptive_scale = 200;   // More sensitive to quiet parts
-            if(adaptive_scale > 8000) adaptive_scale = 8000; // Handle very loud parts
+            // More reactive scaling range for better music response
+            if(adaptive_scale < 100) adaptive_scale = 100;   // Very sensitive to quiet parts  
+            if(adaptive_scale > 4000) adaptive_scale = 4000; // Handle loud parts without over-dampening
+            
+            // DEBUG: Store scaling values for analysis (using safe slots 240+)
+            SPRITE_PALETTE[240] = (adaptive_scale & 0xFFFF); // Current adaptive scale
+            SPRITE_PALETTE[241] = (avg_total & 0xFFFF);      // Average amplitude
         }
+        
+        // DEBUG: Store sample analysis data (using safe slots 242+)
+        SPRITE_PALETTE[242] = (spectrum_sample_count_8ad & 0xFFFF);        // Sample count
+        SPRITE_PALETTE[243] = (spectrum_accumulators_8ad[1] & 0xFFFF);     // Bass bar raw data
+        SPRITE_PALETTE[244] = (spectrum_accumulators_8ad[4] & 0xFFFF);     // Mid bar raw data
+        SPRITE_PALETTE[245] = (spectrum_accumulators_8ad[6] & 0xFFFF);     // Treble bar raw data (Bar[6], not [7])
+        
+        // DEBUG: Compare Bar[0] and Bar[6] processing
+        SPRITE_PALETTE[246] = (spectrum_accumulators_8ad[0] & 0xFFFF);     // Bar[0] raw data for comparison
+        SPRITE_PALETTE[247] = bar_current_heights[0];                      // Bar[0] current height
+        SPRITE_PALETTE[248] = bar_current_heights[6];                      // Bar[6] current height
         
         for(int i = 0; i < NUM_BARS; i++) {
             long accumulated_amplitude = spectrum_accumulators_8ad[i];
@@ -146,9 +180,9 @@ void update_spectrum_visualizer(void) {
                 
                 // BALANCED frequency-specific behavior - ensure all bars are lively
                 if(i == 0) {
-                    // Sub-bass: Massive boost to make it always visible
-                    target_height += target_height; // +100% boost (was +50%)
-                    target_height += 8; // Larger baseline for visibility
+                    // Sub-bass: Reduced for spectrum curve effect (less active edges)
+                    target_height += (target_height >> 2); // +25% boost (reduced from +100%)
+                    target_height += 3; // Lower baseline to de-emphasize
                 } else if(i == 1) {
                     // Bass: Very strong response
                     target_height += (target_height >> 1) + (target_height >> 2); // +75% boost
@@ -157,9 +191,12 @@ void update_spectrum_visualizer(void) {
                         target_height += 12; // Stronger bass attacks
                     }
                 } else if(i == 2) {
-                    // Bass-mid: Reduce dominance but keep visible
-                    target_height += (target_height >> 3); // +12.5% boost (was +25%)
-                    target_height += 4; // Baseline for warmth
+                    // Bass-mid: Enhanced for symmetrical spectrum response (match Bar[5])
+                    target_height += target_height; // +100% boost (matching Bar[5])
+                    target_height += 5; // Higher baseline for presence
+                    if(amplitude_change > (previous_amplitudes[i] >> 2)) { // Sensitive bass transient detection
+                        target_height += 10; // Strong response to bass attacks
+                    }
                 } else if(i == 3 || i == 4) {
                     // Mids: Reduce dominance - these were too active
                     target_height += (target_height >> 4); // +6.25% boost (was +12.5%)
@@ -167,28 +204,22 @@ void update_spectrum_visualizer(void) {
                         target_height += (amplitude_change >> 8); // Less vocal sensitivity
                     }
                 } else if(i == 5) {
-                    // High-mid: Increase visibility
-                    target_height += (target_height >> 1); // +50% boost (was +25%)
-                    target_height += 3; // Baseline visibility
+                    // High-mid: MAXIMUM sensitivity for cymbals and high-freq transients
+                    target_height += target_height; // +100% boost (doubled from +50%)
+                    target_height += 5; // Higher baseline for presence
+                    if(amplitude_change > (previous_amplitudes[i] >> 3)) { // Very sensitive threshold
+                        target_height += 12; // Strong transient response for hi-hats
+                    }
                 } else if(i == 6) {
-                    // Treble: Strong boost for visibility
-                    target_height += target_height; // +100% boost (was +50%)
-                    target_height += 6; // Baseline for treble presence
-                    if(amplitude_change > previous_amplitudes[i]) {
-                        target_height += 10; // Stronger treble attacks
-                    }
-                } else { // i == 7
-                    // High treble: Maximum boost for sparkle
-                    target_height += target_height + (target_height >> 1); // +150% boost
-                    target_height += 4; // Baseline for sparkle
-                    if(amplitude_change > (previous_amplitudes[i] >> 2)) {
-                        target_height += 15; // Maximum transient response
-                    }
+                    // High treble: IDENTICAL to Bar[0] processing for exact same animation
+                    target_height += (target_height >> 2); // +25% boost (same as Bar[0])
+                    target_height += 3; // Same baseline as Bar[0]
+                    // No special transient response (like Bar[0])
                 }
                 
-                // Fast rhythm emphasis using simple comparison
-                if(amplitude_change > (previous_amplitudes[i] << 1)) { // Fast 2x check
-                    target_height += 10; // Boost for sudden attacks
+                // Fast rhythm emphasis using simple comparison (exclude Bar[6] for gentleness)
+                if(i != 6 && amplitude_change > (previous_amplitudes[i] << 1)) { // Fast 2x check
+                    target_height += 10; // Boost for sudden attacks (Bar[6] excluded for smooth behavior)
                 }
             }
             
@@ -201,6 +232,32 @@ void update_spectrum_visualizer(void) {
             spectrum_accumulators_8ad[i] = 0; // Reset accumulator
         }
         spectrum_sample_count_8ad = 0;
+        
+        // PHASE 1: Calculate lateral energy spreading (cohesive animation)
+        // Use two-phase approach to avoid feedback loops
+        int spreads[NUM_BARS] = {0,0,0,0,0,0,0}; // Initialize all to 0
+        
+        for(int i = 1; i < NUM_BARS-1; i++) { // Skip edges (bars 0 and 6)
+            // Each bar gets influenced by its immediate neighbors
+            int left_influence = (bar_target_heights[i-1] - 8) / 8;  // 12.5% of neighbor's height above baseline
+            int right_influence = (bar_target_heights[i+1] - 8) / 8; // 12.5% of neighbor's height above baseline
+            
+            // Only positive influence (bars don't reduce each other)
+            if(left_influence > 0) spreads[i] += left_influence;
+            if(right_influence > 0) spreads[i] += right_influence;
+            
+            // Cap the spreading influence to prevent runaway
+            if(spreads[i] > 15) spreads[i] = 15; // Max 15 pixels of spreading
+        }
+        
+        // PHASE 2: Apply all spreads simultaneously (no feedback loops)
+        for(int i = 0; i < NUM_BARS; i++) {
+            bar_target_heights[i] += spreads[i];
+            
+            // Re-clamp after spreading
+            if(bar_target_heights[i] < 8) bar_target_heights[i] = 8;
+            if(bar_target_heights[i] > 120) bar_target_heights[i] = 120;
+        }
     }
     
     // Enhanced bouncy physics simulation for MAXIMUM liveliness
@@ -226,8 +283,10 @@ void update_spectrum_visualizer(void) {
             int decay_rate;
             if(i <= 1) {
                 decay_rate = 1; // Bass: slow decay
-            } else if(i >= 6) {
-                decay_rate = 3; // Treble: faster decay  
+            } else if(i == 6) {
+                decay_rate = 1; // Bar[6]: IDENTICAL decay to Bar[0] (gentle)
+            } else if(i == 5) {
+                decay_rate = 4; // Bar[5]: AGGRESSIVE decay
             } else {
                 decay_rate = 2; // Mids: medium decay
             }
@@ -242,6 +301,11 @@ void update_spectrum_visualizer(void) {
         // Simple bounds checking
         if(bar_current_heights[i] < 8) bar_current_heights[i] = 8;
         if(bar_current_heights[i] > 120) bar_current_heights[i] = 120;
+        
+        // AGGRESSIVE reset for Bar[5] only (Bar[6] now uses gentle behavior like Bar[0])
+        if(i == 5 && bar_current_heights[i] > bar_target_heights[i] + 20) {
+            bar_current_heights[i] = bar_target_heights[i] + 10; // Jump closer to target immediately
+        }
     }
 }
 
@@ -275,13 +339,13 @@ void render_spectrum_bars(void) {
         OAM[i].attr2 = 0;
     }
     
-    // Create 8 spectrum bars using stacked 8x8 sprites
+    // Create 7 spectrum bars using stacked 8x8 sprites
     int sprite_count = 0;
     
     // DEBUG: Store bar heights and creation info
     SPRITE_PALETTE[25] = bar_current_heights[0]; // First bar height
     SPRITE_PALETTE[26] = bar_current_heights[1]; // Second bar height  
-    SPRITE_PALETTE[27] = bar_current_heights[7]; // Last bar height
+    SPRITE_PALETTE[27] = bar_current_heights[6]; // Last bar height (7-bar system)
     
     // DEBUG: Store positioning info for first few bars
     SPRITE_PALETTE[20] = 20 + (0 * 25); // Bar 0 X position (should be 20)
@@ -292,22 +356,34 @@ void render_spectrum_bars(void) {
         // Use actual animated bar heights from physics system
         int bar_height = bar_current_heights[bar];
         
-        int bar_x = 8 + (bar * 28); // Even more spacing: 8px start + 28px gaps = ~232px total, prevents overlap
+        int bar_x = 16 + (bar * 32); // Shifted right 8px for better centering: 16px start + 32px gaps = 208px span, centered on 240px screen
         int num_sprites = (bar_height + 7) / 8; // Convert height to number of 8x8 sprites needed
         
-        // Limit to prevent sprite overflow and ensure minimum height
-        if (num_sprites > 12) num_sprites = 12;  // Leave more room for other visualizers
+        // Variable height limits based on bar position - strategic sprite budget allocation
+        int max_sprites_for_bar;
+        if (bar == 0 || bar == 6) {
+            max_sprites_for_bar = 4; // Edge bars (Bar[0], Bar[6]): conservative 4 levels (32px)
+        } else if (bar == 1 || bar == 5) {
+            max_sprites_for_bar = 6; // Near-edge bars: moderate 6 levels (48px)
+        } else if (bar == 3) {
+            max_sprites_for_bar = 10; // Center bar (Bar[3]): maximum height 10 levels (80px)
+        } else {
+            max_sprites_for_bar = 8; // Side-middle bars (Bar[2], Bar[4]): tall 8 levels (64px)  
+        }
+        // Total budget: (4+6+8+10+8+6+4) × 2 sprites = 92 sprites (safe within 96 limit)
+        
+        if (num_sprites > max_sprites_for_bar) num_sprites = max_sprites_for_bar;
         if (num_sprites < 1) num_sprites = 1;    // Always show at least one sprite per bar
         
         // Stack sprites from bottom to top - calculate exact bottom position first
         int bottom_y = 110; // Bottom edge of the spectrum area
         
         for (int sprite = 0; sprite < num_sprites; sprite++) {
-            if (sprite_count >= 126) break; // Need 2 sprites per level, leave room
+            if (sprite_count >= 94) break; // Limit to 94 sprites (leave room for 96 total)
             
             // Stack each 8x8 sprite directly on top of the previous one
             int sprite_y = bottom_y - (sprite * 8) - 8; // -8 because sprite Y is top-left corner
-            int bar_palette = bar % 8; // Use palettes 0-7 for bars 0-7
+            int bar_palette = bar % 7; // Use palettes 0-6 for bars 0-6
             int left_tile = base_tile + (bar * 2);     // Left tile: 100, 102, 104, etc.  
             int right_tile = base_tile + (bar * 2) + 1; // Right tile: 101, 103, 105, etc.
             
@@ -335,5 +411,8 @@ void render_spectrum_bars(void) {
     
     // DEBUG: Store total sprite count and bar count in palette
     SPRITE_PALETTE[28] = sprite_count;
-    SPRITE_PALETTE[24] = NUM_BARS; // Should be 8
+    SPRITE_PALETTE[24] = NUM_BARS; // Should be 7
+    
+    // FINAL OVERRIDE: Force palette 1 to magenta at the very end to override any system interference
+    SPRITE_PALETTE[1 * 16 + 1] = RGB5(25, 0, 31);    // Force bright magenta for Bar[1] - FINAL override
 }
