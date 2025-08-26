@@ -160,6 +160,10 @@ int main() {
             prev_track_8ad();
         }
         
+        if (pressed & KEY_A) {
+            toggle_pause_8ad();
+        }
+        
         // Handle visualization switching (UP/DOWN)
         handle_visualization_controls(pressed);
         
