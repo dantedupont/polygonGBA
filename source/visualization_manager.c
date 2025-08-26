@@ -2,7 +2,7 @@
 #include "spectrum_visualizer.h"
 #include "waveform_visualizer.h"
 #include "geometric_visualizer.h"
-// TODO: Add other visualization includes as we create them
+#include <gba.h>
 
 // Current visualization state
 static VisualizationMode current_mode = VIZ_SPECTRUM_BARS;
@@ -13,9 +13,7 @@ static bool manager_initialized = false;
 static const char* viz_names[NUM_VISUALIZATIONS] = {
     "Spectrum Bars",
     "Waveform",
-    "Geometric",
-    "Particles",
-    "Oscilloscope"
+    "Geometric"
 };
 
 void init_visualization_manager(void) {
@@ -40,12 +38,6 @@ static void cleanup_visualization(VisualizationMode mode) {
         case VIZ_GEOMETRIC:
             cleanup_geometric_visualizer();
             break;
-        case VIZ_PARTICLES:
-            // TODO: cleanup_particle_visualizer();
-            break;
-        case VIZ_OSCILLOSCOPE:
-            // TODO: cleanup_oscilloscope_visualizer();
-            break;
         default:
             break;
     }
@@ -61,12 +53,6 @@ static void init_visualization(VisualizationMode mode) {
             break;
         case VIZ_GEOMETRIC:
             init_geometric_visualizer();
-            break;
-        case VIZ_PARTICLES:
-            // TODO: init_particle_visualizer();
-            break;
-        case VIZ_OSCILLOSCOPE:
-            // TODO: init_oscilloscope_visualizer();
             break;
         default:
             break;
@@ -84,6 +70,9 @@ void switch_visualization(VisualizationMode new_mode) {
     
     // Cleanup current visualization
     cleanup_visualization(initialized_mode);
+    
+    // MODE_1: No mode switching needed - everything uses MODE_1
+    // This eliminates all corruption artifacts from mode switching
     
     // Initialize new visualization
     init_visualization(new_mode);
@@ -122,12 +111,6 @@ void update_current_visualization(void) {
             update_geometric_visualizer();
             update_spectrum_visualizer(); // Process and reset spectrum data for next frame
             break;
-        case VIZ_PARTICLES:
-            // TODO: update_particle_visualizer();
-            break;
-        case VIZ_OSCILLOSCOPE:
-            // TODO: update_oscilloscope_visualizer();
-            break;
         default:
             break;
     }
@@ -135,6 +118,9 @@ void update_current_visualization(void) {
 
 void render_current_visualization(void) {
     if (!manager_initialized) return;
+    
+    // DEBUG: Store current mode in palette for debugging
+    SPRITE_PALETTE[31] = current_mode; // 0=spectrum, 1=waveform, 2=geometric
     
     switch(current_mode) {
         case VIZ_SPECTRUM_BARS:
@@ -145,12 +131,6 @@ void render_current_visualization(void) {
             break;
         case VIZ_GEOMETRIC:
             render_geometric_hexagon();
-            break;
-        case VIZ_PARTICLES:
-            // TODO: render_particles();
-            break;
-        case VIZ_OSCILLOSCOPE:
-            // TODO: render_oscilloscope();
             break;
         default:
             break;

@@ -61,13 +61,53 @@ int main() {
     irqInit();
     irqEnable(IRQ_VBLANK);
     
-    // Use Mode 3 with sprites enabled for testing
-    SetMode(MODE_3 | BG2_ENABLE | OBJ_ENABLE | OBJ_1D_MAP);
+    // MODE_1: Use unified video mode for all visualizations
+    // This eliminates mode switching corruption artifacts
+    SetMode(MODE_1 | BG0_ENABLE | BG2_ENABLE | OBJ_ENABLE | OBJ_1D_MAP);
     
-    // Clear screen to black
-    u16* framebuffer = (u16*)0x6000000;
-    for(int i = 0; i < 240*160; i++) {
-        framebuffer[i] = RGB5(0, 0, 0); // Black background
+    // Initialize font system for text rendering
+    init_font_tiles();
+    
+    // Configure BG1 for text overlay (uses existing font system)
+    REG_BG1CNT = BG_SIZE_0 | BG_16_COLOR | BG_PRIORITY(0) | CHAR_BASE(0) | SCREEN_BASE(30);
+    REG_BG1HOFS = 0;
+    REG_BG1VOFS = 0;
+    
+    // Configure BG2 for solid background
+    REG_BG2CNT = BG_SIZE_0 | BG_256_COLOR | CHAR_BASE(1) | SCREEN_BASE(29);
+    
+    // Enable BG1 instead of BG0
+    SetMode(MODE_1 | BG1_ENABLE | BG2_ENABLE | OBJ_ENABLE | OBJ_1D_MAP);
+    
+    // Clear BG1 tilemap (text layer)
+    u16* textMap = (u16*)SCREEN_BASE_BLOCK(30);
+    for (int i = 0; i < 1024; i++) {
+        textMap[i] = 0;
+    }
+    
+    // Set up solid black background using BG2
+    u16* bgMap = (u16*)SCREEN_BASE_BLOCK(29);
+    for (int i = 0; i < 1024; i++) {
+        bgMap[i] = 1; // Use tile 1 (black tile)
+    }
+    
+    // Create a simple black tile at index 1 in character base 1
+    u8* tileMem = (u8*)0x6004000; // Character base 1
+    for (int i = 0; i < 64; i++) { // 8x8 tile in 256-color mode = 64 bytes
+        tileMem[64 + i] = 0; // Tile 1 (offset 64), all pixels black
+    }
+    
+    // Set BG palette colors for text and background
+    BG_PALETTE[0] = RGB5(0, 0, 0);        // Color 0: Black (background/transparent)
+    BG_PALETTE[16] = RGB5(0, 0, 0);       // Palette 1, Color 0: Transparent
+    BG_PALETTE[17] = RGB5(31, 31, 0);     // Palette 1, Color 1: Yellow (text)
+    
+    // CRITICAL: Initialize ALL OAM entries to disabled state first
+    // This prevents sprite artifacts from previous sessions or undefined memory
+    for (int i = 0; i < 128; i++) {
+        OAM[i].attr0 = ATTR0_DISABLED;
+        OAM[i].attr1 = 0;
+        OAM[i].attr2 = 0;
     }
     
     // Initialize visualization manager
@@ -90,14 +130,11 @@ int main() {
     // Start first track
     start_8ad_track(0);
     
-    // Initialize font system for track titles (disabled - Mode 3 uses direct framebuffer)
-    // init_font_tiles();
+    // Font system already initialized above
     
     unsigned short last_keys = 0;
     
-    // Visualization mode (0=spectrum, 1=waveform)
-    int visualization_mode = 0;
-    int last_viz_mode = -1;
+    // Visualization mode variables removed - handled by visualization_manager
     
     // Main loop with spectrum analyzer
     while(1) {
@@ -107,6 +144,8 @@ int main() {
         audio_vblank_8ad();
         mixer_8ad();
         
+        // Sprites are now handled directly in each visualizer's render function
+        // This ensures proper mode isolation and timing
         
         // Input handling
         unsigned short keys = ~REG_KEYINPUT & 0x3ff;
@@ -138,25 +177,57 @@ int main() {
             last_displayed_track = current_track_num;
             last_displayed_viz = current_viz;
             
-            // Clear and draw blue background for info area
-            u16* framebuffer = (u16*)0x6000000;
-            for (int y = 130; y < 155; y++) {
-                for (int x = 0; x < 240; x++) {
-                    framebuffer[y * 240 + x] = RGB5(0, 0, 15); // Blue background
+            // MODE_1: Use existing tile-based text system on BG1
+            const char* track_name = get_full_track_name(current_track_num);
+            const char* viz_name = get_visualization_name(current_viz);
+            
+            draw_text_tiles(1, 17, track_name);  // Row 17 (near bottom)
+            draw_text_tiles(1, 18, viz_name);    // Row 18
+            
+            // DEBUG: Compact sprite debug info
+            char debug_buffer[80];
+            int active_first10 = 0;
+            int total_active = 0;
+            for (int i = 0; i < 128; i++) {
+                if ((OAM[i].attr0 & ATTR0_DISABLED) == 0) {
+                    total_active++;
+                    if (i < 10) active_first10++;
                 }
             }
+            sprintf(debug_buffer, "Sprites: %d total, %d(0-9)", total_active, active_first10);
+            // Debug text on row 19
+            draw_text_tiles(1, 19, debug_buffer);
             
-            // Draw track title
-            const char* track_name = get_full_track_name(current_track_num);
-            draw_text(framebuffer, 10, 135, track_name, RGB5(31, 31, 0)); // Yellow text
-            
-            // Draw visualization name  
-            const char* viz_name = get_visualization_name(current_viz);
-            draw_text(framebuffer, 10, 145, viz_name, RGB5(15, 31, 15)); // Light green text
+            // DEBUG: Show visualization-specific stats  
+            if (current_viz == 0) { // VIZ_SPECTRUM_BARS
+                char spectrum_debug[60];
+                int render_calls = SPRITE_PALETTE[29];
+                int tile_exists = SPRITE_PALETTE[30];
+                int sprite_count = SPRITE_PALETTE[28];
+                int bar0_height = SPRITE_PALETTE[25];
+                int x_pos = SPRITE_PALETTE[26];
+                int y_pos = SPRITE_PALETTE[27];
+                int bar0_h = SPRITE_PALETTE[25];
+                int bar1_h = SPRITE_PALETTE[26];
+                int bar7_h = SPRITE_PALETTE[27];
+                int bar0_x = SPRITE_PALETTE[16]; 
+                int bar1_x = SPRITE_PALETTE[18];
+                sprintf(spectrum_debug, "SPEC: s:%d x0:%d x1:%d", sprite_count, bar0_x, bar1_x);
+                // Additional debug can be added if needed
+            } else if (current_viz == 1) { // VIZ_WAVEFORM
+                char debug_buffer2[60];
+                int created = SPRITE_PALETTE[16];
+                int attempted = SPRITE_PALETTE[17]; 
+                int failed = SPRITE_PALETTE[18];
+                int amplitude = SPRITE_PALETTE[19];
+                sprintf(debug_buffer2, "WF: made:%d/%d fail:%d amp:%d", created, attempted, failed, amplitude);
+                // Additional waveform debug can be added if needed
+            }
         }
     }
     
     return 0;
 }
+
 
 
