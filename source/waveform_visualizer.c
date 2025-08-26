@@ -48,9 +48,9 @@ void init_waveform_visualizer(void) {
     SPRITE_PALETTE[8 * 16 + 3] = RGB5(31, 0, 31);    // BRIGHT MAGENTA
     SPRITE_PALETTE[8 * 16 + 4] = RGB5(31, 31, 0);    // BRIGHT YELLOW
     
-    // MODE_1: Create waveform sprite tile at index 110 (after spectrum tiles 100-107)
+    // MODE_1: Create waveform sprite tile at index 120 (after spectrum tiles 100-115)
     u32* spriteGfx = (u32*)0x6010000; // MODE_1 standard sprite memory
-    int waveform_tile_index = 110;
+    int waveform_tile_index = 120;
     u32 pixel_data = 0x11111111; // All pixels use palette color 1 (bright green)
     
     // Create 8x8 solid tile for waveform dots
@@ -242,11 +242,11 @@ void render_waveform(void) {
     
     // Clean waveform display - no debug lines needed
     
-    // MODE_1: Use pre-created tile from init function
-    int waveform_tile = 110; // Our waveform tile from init
+    // MODE_1: Use pre-created tile from init function  
+    int waveform_tile = 120; // Our waveform tile from init (moved to avoid spectrum conflict)
     
     // DEBUG: Store tile info for debugging
-    SPRITE_PALETTE[24] = waveform_tile; // Store which tile we're using (110)
+    SPRITE_PALETTE[24] = waveform_tile; // Store which tile we're using (120)
     u32* spriteGfx = (u32*)0x6010000; // MODE_1 sprite memory
     SPRITE_PALETTE[25] = (spriteGfx[waveform_tile * 8] & 0xFFFF); // Store tile data check
     

@@ -140,12 +140,12 @@ int main() {
     while(1) {
         VBlankIntrWait();
         
+        // CRITICAL: Update sprites immediately after VBlank to prevent tearing
+        render_current_visualization();
+        
         // 8AD audio processing
         audio_vblank_8ad();
         mixer_8ad();
-        
-        // Sprites are now handled directly in each visualizer's render function
-        // This ensures proper mode isolation and timing
         
         // Input handling
         unsigned short keys = ~REG_KEYINPUT & 0x3ff;
@@ -163,9 +163,8 @@ int main() {
         // Handle visualization switching (UP/DOWN)
         handle_visualization_controls(pressed);
         
-        // Update and render current visualization
+        // Update visualization data for next frame
         update_current_visualization();
-        render_current_visualization();
         
         // Display track title and visualization info
         static int last_displayed_track = -1;
@@ -184,45 +183,7 @@ int main() {
             draw_text_tiles(1, 17, track_name);  // Row 17 (near bottom)
             draw_text_tiles(1, 18, viz_name);    // Row 18
             
-            // DEBUG: Compact sprite debug info
-            char debug_buffer[80];
-            int active_first10 = 0;
-            int total_active = 0;
-            for (int i = 0; i < 128; i++) {
-                if ((OAM[i].attr0 & ATTR0_DISABLED) == 0) {
-                    total_active++;
-                    if (i < 10) active_first10++;
-                }
-            }
-            sprintf(debug_buffer, "Sprites: %d total, %d(0-9)", total_active, active_first10);
-            // Debug text on row 19
-            draw_text_tiles(1, 19, debug_buffer);
-            
-            // DEBUG: Show visualization-specific stats  
-            if (current_viz == 0) { // VIZ_SPECTRUM_BARS
-                char spectrum_debug[60];
-                int render_calls = SPRITE_PALETTE[29];
-                int tile_exists = SPRITE_PALETTE[30];
-                int sprite_count = SPRITE_PALETTE[28];
-                int bar0_height = SPRITE_PALETTE[25];
-                int x_pos = SPRITE_PALETTE[26];
-                int y_pos = SPRITE_PALETTE[27];
-                int bar0_h = SPRITE_PALETTE[25];
-                int bar1_h = SPRITE_PALETTE[26];
-                int bar7_h = SPRITE_PALETTE[27];
-                int bar0_x = SPRITE_PALETTE[16]; 
-                int bar1_x = SPRITE_PALETTE[18];
-                sprintf(spectrum_debug, "SPEC: s:%d x0:%d x1:%d", sprite_count, bar0_x, bar1_x);
-                // Additional debug can be added if needed
-            } else if (current_viz == 1) { // VIZ_WAVEFORM
-                char debug_buffer2[60];
-                int created = SPRITE_PALETTE[16];
-                int attempted = SPRITE_PALETTE[17]; 
-                int failed = SPRITE_PALETTE[18];
-                int amplitude = SPRITE_PALETTE[19];
-                sprintf(debug_buffer2, "WF: made:%d/%d fail:%d amp:%d", created, attempted, failed, amplitude);
-                // Additional waveform debug can be added if needed
-            }
+            // Clean interface - no debug text needed
         }
     }
     
