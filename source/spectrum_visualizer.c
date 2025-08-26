@@ -10,6 +10,7 @@ static int bar_velocities[NUM_BARS] = {0,0,0,0,0,0,0,0};
 static long previous_amplitudes[NUM_BARS] = {0};
 static int adaptive_scale = 1000; // Dynamic scaling factor
 static bool is_initialized = false;
+// Removed height tracking - always update sprites for consistent rendering
 
 void init_spectrum_visualizer(void) {
     if (is_initialized) return;
@@ -36,14 +37,20 @@ void init_spectrum_visualizer(void) {
     // MODE_1: Standard sprite memory at 0x6010000, tiles 100+ (after font tiles 0-95)
     u32* spriteGfx = (u32*)0x6010000; // Standard sprite tile memory for MODE_1
     
-    // Create 8 solid color tiles for spectrum bars (tiles 100-107)
-    for(int tile = 0; tile < 8; tile++) {
-        int tile_index = 100 + tile; // Start at tile 100 to avoid font conflicts
+    // Create 8 pairs of 8x8 tiles for 16x8 spectrum bars (tiles 100-115)
+    for(int bar = 0; bar < 8; bar++) {
+        int left_tile = 100 + (bar * 2);     // Left half: 100, 102, 104, 106, 108, 110, 112, 114
+        int right_tile = 100 + (bar * 2) + 1; // Right half: 101, 103, 105, 107, 109, 111, 113, 115
         u32 pixel_data = 0x11111111; // All pixels use palette color 1
         
-        // Each 8x8 tile needs 8 rows of data (32 bytes = 8 u32s)
+        // Create left 8x8 tile
         for(int row = 0; row < 8; row++) {
-            spriteGfx[(tile_index * 8) + row] = pixel_data;
+            spriteGfx[(left_tile * 8) + row] = pixel_data;
+        }
+        
+        // Create right 8x8 tile (identical to left for solid bars)
+        for(int row = 0; row < 8; row++) {
+            spriteGfx[(right_tile * 8) + row] = pixel_data;
         }
     }
     
@@ -201,91 +208,40 @@ void update_spectrum_visualizer(void) {
         int current = bar_current_heights[i];
         int target = bar_target_heights[i];
         
-        if(target > current) {
-            // Audio got louder - MORE DRAMATIC snap up with overshoot
-            int jump = target - current;
-            
-            // Frequency-specific overshoot for musical realism
-            if(jump > 15) {
-                // Different overshoot behavior per frequency range
-                int overshoot;
-                if(i <= 1) {
-                    // Bass: moderate overshoot (bass instruments don't spike as much)
-                    overshoot = jump >> 3; // 12.5% overshoot
-                } else if(i >= 6) {
-                    // Treble: large overshoot (cymbals, attacks spike dramatically)
-                    overshoot = jump >> 2; // 25% overshoot
-                } else {
-                    // Mids: balanced overshoot
-                    overshoot = jump >> 3; // 12.5% overshoot
-                }
-                
-                bar_current_heights[i] = target + overshoot;
-                bar_velocities[i] = -(overshoot >> 1); // Bounce back proportionally
+        // SMOOTH ANIMATION: Eliminate overshoot and bouncing to prevent tearing
+        int diff = target - current;
+        
+        if(diff > 0) {
+            // Audio got louder - smooth upward movement
+            if(diff >= 8) {
+                // Large jumps: move quickly but smoothly
+                bar_current_heights[i] = current + (diff >> 1) + 2; // Move halfway + 2px per frame
             } else {
-                // Small jumps with frequency-specific behavior
-                if(i <= 1) {
-                    // Bass: solid, no overshoot for small changes
-                    bar_current_heights[i] = target;
-                    bar_velocities[i] = 0;
-                } else if(i >= 6) {
-                    // Treble: always slight overshoot for sparkle
-                    bar_current_heights[i] = target + 3;
-                    bar_velocities[i] = -1;
-                } else {
-                    // Mids: slight overshoot
-                    bar_current_heights[i] = target + 1;
-                    bar_velocities[i] = -1;
-                }
-            }
-        } else {
-            // Audio got quieter - MUSICALLY REALISTIC fall physics
-            
-            // Each frequency band has unique physical characteristics
-            int gravity;
-            if(i == 0) {
-                gravity = 1; // Sub-bass: very slow decay (like a kick drum resonance)
-            } else if(i == 1) {
-                gravity = 1; // Bass: slow decay (bass instruments sustain)
-            } else if(i == 2) {
-                gravity = 2; // Bass-mid: medium-slow decay
-            } else if(i == 3 || i == 4) {
-                gravity = 2; // Mids: medium decay (vocal/instrument sustain)
-            } else if(i == 5) {
-                gravity = 3; // High-mid: faster decay
-            } else if(i == 6) {
-                gravity = 4; // Treble: fast decay (strings, guitars)
-            } else { // i == 7
-                gravity = 6; // High treble: very fast decay (cymbals, hi-hats)
-            }
-            
-            bar_velocities[i] += gravity;
-            bar_current_heights[i] -= bar_velocities[i];
-            
-            // Bounce effect when hitting target
-            if(bar_current_heights[i] < target) {
+                // Small jumps: direct movement
                 bar_current_heights[i] = target;
-                
-                // Add subtle bounce for liveliness
-                if(bar_velocities[i] > 3) {
-                    bar_velocities[i] = -(bar_velocities[i] / 4); // Bounce back with 25% energy
-                } else {
-                    bar_velocities[i] = 0; // Stop small bounces
-                }
+            }
+            bar_velocities[i] = 0; // No bouncing velocities
+        } else if(diff < 0) {
+            // Audio got quieter - smooth decay based on frequency
+            int decay_rate;
+            if(i <= 1) {
+                decay_rate = 1; // Bass: slow decay
+            } else if(i >= 6) {
+                decay_rate = 3; // Treble: faster decay  
+            } else {
+                decay_rate = 2; // Mids: medium decay
             }
             
-            // Enhanced minimum clamp with overshoot correction
-            if(bar_current_heights[i] < 8) {
-                bar_current_heights[i] = 8;
-                bar_velocities[i] = 0;
+            bar_current_heights[i] = current - decay_rate;
+            if(bar_current_heights[i] < target) {
+                bar_current_heights[i] = target; // Don't overshoot downward
             }
-            
-            // Handle overshoot correction (when bars go too high)
-            if(bar_current_heights[i] > 120) {
-                bar_current_heights[i] = 120;
-                bar_velocities[i] = 1; // Small downward velocity to settle
-            }
+            bar_velocities[i] = 0; // No bouncing
         }
+        
+        // Simple bounds checking
+        if(bar_current_heights[i] < 8) bar_current_heights[i] = 8;
+        if(bar_current_heights[i] > 120) bar_current_heights[i] = 120;
     }
 }
 
@@ -309,8 +265,11 @@ void render_spectrum_bars(void) {
     u32* spriteGfx = (u32*)0x6010000; // MODE_1 sprite memory
     SPRITE_PALETTE[30] = (spriteGfx[base_tile * 8] != 0) ? 1 : 0; // Check tile 100
     
-    // Clear all OAM entries first to ensure clean slate
-    for(int i = 0; i < 128; i++) {
+    // ALWAYS update sprites for consistent rendering - prevents tearing from partial updates
+    
+    // Clear only spectrum visualizer's OAM entries (0-95) when we need updates
+    // Leave geometric visualizer's sprites (96-127) alone
+    for(int i = 0; i < 96; i++) {
         OAM[i].attr0 = ATTR0_DISABLED;
         OAM[i].attr1 = 0;
         OAM[i].attr2 = 0;
@@ -333,34 +292,46 @@ void render_spectrum_bars(void) {
         // Use actual animated bar heights from physics system
         int bar_height = bar_current_heights[bar];
         
-        int bar_x = 20 + (bar * 25); // Space bars evenly across screen (8 bars * 25 pixels = 200, centered)
+        int bar_x = 8 + (bar * 28); // Even more spacing: 8px start + 28px gaps = ~232px total, prevents overlap
         int num_sprites = (bar_height + 7) / 8; // Convert height to number of 8x8 sprites needed
         
-        // Limit to prevent sprite overflow
-        if (num_sprites > 15) num_sprites = 15;
+        // Limit to prevent sprite overflow and ensure minimum height
+        if (num_sprites > 12) num_sprites = 12;  // Leave more room for other visualizers
+        if (num_sprites < 1) num_sprites = 1;    // Always show at least one sprite per bar
         
-        // Stack sprites from bottom to top
+        // Stack sprites from bottom to top - calculate exact bottom position first
+        int bottom_y = 110; // Bottom edge of the spectrum area
+        
         for (int sprite = 0; sprite < num_sprites; sprite++) {
-            if (sprite_count >= 128) break; // Prevent OAM overflow
+            if (sprite_count >= 126) break; // Need 2 sprites per level, leave room
             
-            int sprite_y = 140 - (sprite * 8); // Start from bottom (Y=140) and go up
+            // Stack each 8x8 sprite directly on top of the previous one
+            int sprite_y = bottom_y - (sprite * 8) - 8; // -8 because sprite Y is top-left corner
+            int bar_palette = bar % 8; // Use palettes 0-7 for bars 0-7
+            int left_tile = base_tile + (bar * 2);     // Left tile: 100, 102, 104, etc.  
+            int right_tile = base_tile + (bar * 2) + 1; // Right tile: 101, 103, 105, etc.
             
+            // Create left 8x8 sprite
             OAM[sprite_count].attr0 = ATTR0_NORMAL | ATTR0_COLOR_16 | ATTR0_SQUARE | (sprite_y & 0xFF);
             OAM[sprite_count].attr1 = ATTR1_SIZE_8 | (bar_x & 0x01FF);
-            // MODE_1: Each bar uses its own tile (100+bar) with its own palette
-            int bar_palette = bar % 8; // Use palettes 0-7 for bars 0-7  
-            int bar_tile = base_tile + bar; // Tiles 100-107 for bars 0-7
-            OAM[sprite_count].attr2 = ATTR2_PALETTE(bar_palette) | bar_tile;
+            OAM[sprite_count].attr2 = ATTR2_PALETTE(bar_palette) | left_tile;
+            sprite_count++;
             
-            // DEBUG: Store first sprite's position for each bar
-            if (sprite == 0) { // First sprite of each bar
+            // Create right 8x8 sprite
+            OAM[sprite_count].attr0 = ATTR0_NORMAL | ATTR0_COLOR_16 | ATTR0_SQUARE | (sprite_y & 0xFF);
+            OAM[sprite_count].attr1 = ATTR1_SIZE_8 | ((bar_x + 8) & 0x01FF); // 8px to the right
+            OAM[sprite_count].attr2 = ATTR2_PALETTE(bar_palette) | right_tile;
+            sprite_count++;
+            
+            // DEBUG: Store first sprite pair's position for each bar
+            if (sprite == 0) { // First sprite pair of each bar
                 if (bar == 0) { SPRITE_PALETTE[16] = bar_x; SPRITE_PALETTE[17] = sprite_y; }
                 if (bar == 1) { SPRITE_PALETTE[18] = bar_x; SPRITE_PALETTE[19] = sprite_y; }
             }
-            
-            sprite_count++;
         }
     }
+    
+    // Sprites always updated - no tracking needed
     
     // DEBUG: Store total sprite count and bar count in palette
     SPRITE_PALETTE[28] = sprite_count;
