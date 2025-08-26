@@ -8,6 +8,7 @@ void init_8ad_sound(void);
 void start_8ad_track(int track_num);
 void next_track_8ad(void);
 void prev_track_8ad(void);
+void toggle_pause_8ad(void); // Pause/resume playback
 
 // Audio processing
 void mixer_8ad(void);

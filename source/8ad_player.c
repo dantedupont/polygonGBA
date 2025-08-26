@@ -24,8 +24,10 @@ extern const GBFS_FILE *fs;
 // Track management
 static int current_track = 0;
 static int playing = 0;
+static int paused = 0; // Pause state - audio loaded but not playing
 static const unsigned char *track_data_start;
 static const unsigned char *track_data_end;
+static int auto_advanced = 0; // Flag to prevent multiple auto-advances per track
 
 // Real frequency analysis for visualizer  
 long spectrum_accumulators_8ad[8] = {0};
@@ -35,6 +37,9 @@ int spectrum_sample_count_8ad = 0;
 int bass_filter_state = 0;
 int mid_filter_state = 0;
 int treble_filter_state = 0;
+
+// Forward declaration for auto-advance
+void next_track_8ad(void);
 
 // Audio system (simplified from Pin Eight)
 static void dsound_switch_buffers(const signed char *src)
@@ -76,6 +81,8 @@ void start_8ad_track(int track_num)
     track_data_end = track_data + track_len;
     current_track = track_num;
     playing = 1;
+    paused = 0; // Reset pause state for new track
+    auto_advanced = 0; // Reset auto-advance flag for new track
     
     // CRITICAL: Clear spectrum accumulators during track change to prevent bar sticking
     for(int i = 0; i < 7; i++) {
@@ -94,17 +101,41 @@ void start_8ad_track(int track_num)
 // Pin Eight's mixer approach - simple and direct
 void mixer_8ad(void)
 {
-  if (!playing || !ad.data || ad.data >= track_data_end) {
-    // Fill with silence if not playing
+  // Handle pause state first
+  if (paused) {
+    // Fill with silence when paused
     memset(mixbuf[cur_mixbuf], 0, MIXBUF_SIZE);
     return;
   }
   
-  // Check if we have enough data left
+  // Check if track has ended and auto-advance to next track
+  if (playing && ad.data && ad.data >= track_data_end && !auto_advanced) {
+    // DEBUG: Store auto-advance trigger info in palette for debugging
+    SPRITE_PALETTE[30] = 0xABCD; // Auto-advance triggered marker
+    SPRITE_PALETTE[31] = current_track; // Which track was ending
+    
+    auto_advanced = 1; // Prevent multiple auto-advances
+    next_track_8ad(); // Automatically advance to next track
+    return; // Let the next mixer call handle the new track
+  }
+  
+  if (!playing || !ad.data) {
+    // Fill with silence if not playing or no data
+    memset(mixbuf[cur_mixbuf], 0, MIXBUF_SIZE);
+    return;
+  }
+  
+  // Check if we have enough data left for a full frame
   if (ad.data + AUDIO_FRAME_BYTES <= track_data_end) {
     // Decode exactly MIXBUF_SIZE samples from AUDIO_FRAME_BYTES bytes
     decode_ad(&ad, mixbuf[cur_mixbuf], ad.data, MIXBUF_SIZE);
     ad.data += AUDIO_FRAME_BYTES;
+    
+    // DEBUG: Track progress info for debugging auto-advance
+    u32 track_length = track_data_end - track_data_start;
+    u32 current_position = ad.data - track_data_start;
+    SPRITE_PALETTE[28] = (track_length >> 16) & 0xFFFF; // Track length high
+    SPRITE_PALETTE[29] = (current_position >> 12) & 0xFFFF; // Position (scaled down)
     
     // FAST balanced frequency analysis - optimized for GBA performance
     static int low_pass = 0; // Single low-pass for bass
@@ -147,9 +178,19 @@ void mixer_8ad(void)
     }
     spectrum_sample_count_8ad += MIXBUF_SIZE;
   } else {
-    // End of track - fill with silence
+    // End of track reached - trigger auto-advance if not already done
+    if (!auto_advanced) {
+      // DEBUG: Store end-of-track auto-advance trigger
+      SPRITE_PALETTE[30] = 0xBEEF; // End-of-track auto-advance marker
+      SPRITE_PALETTE[31] = current_track; // Which track was ending
+      
+      auto_advanced = 1;
+      next_track_8ad(); // Automatically advance to next track
+      return; // Let the next mixer call handle the new track
+    }
+    
+    // Fill with silence if auto-advance already happened or failed
     memset(mixbuf[cur_mixbuf], 0, MIXBUF_SIZE);
-    playing = 0;
   }
 }
 
@@ -177,6 +218,25 @@ void prev_track_8ad(void)
     start_8ad_track(current_track);
   }
 }
+
+void toggle_pause_8ad(void)
+{
+  if (playing) {
+    paused = !paused; // Toggle pause state
+    
+    // Clear spectrum data when pausing to stop visualizations immediately
+    if (paused) {
+      for(int i = 0; i < 7; i++) {
+        spectrum_accumulators_8ad[i] = 0;
+      }
+      spectrum_sample_count_8ad = 0;
+      
+      // Also reset spectrum visualizer state for immediate visual feedback
+      reset_spectrum_visualizer_state();
+    }
+  }
+}
+
 
 int get_current_track_8ad(void)
 {
