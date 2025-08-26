@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include "gbfs.h"
 #include "8ad_decoder.h"
+#include "spectrum_visualizer.h" // For reset function
 
 // 8AD system constants (from Pin Eight's implementation)
 #define MIXBUF_SIZE 304
@@ -76,6 +77,15 @@ void start_8ad_track(int track_num)
     current_track = track_num;
     playing = 1;
     
+    // CRITICAL: Clear spectrum accumulators during track change to prevent bar sticking
+    for(int i = 0; i < 7; i++) {
+      spectrum_accumulators_8ad[i] = 0;
+    }
+    spectrum_sample_count_8ad = 0;
+    
+    // CRITICAL: Also reset spectrum visualizer state to clear Bar[7] and others immediately
+    reset_spectrum_visualizer_state();
+    
     // Debug: Log first few bytes of track data to verify 8AD format
     // We'll add unit tests to validate this data
   }
@@ -118,28 +128,22 @@ void mixer_8ad(void)
       spectrum_accumulators_8ad[0] += bass_content + (bass_content >> 1) + (abs_sample >> 6); // Sub-bass
       spectrum_accumulators_8ad[1] += bass_content + (abs_sample >> 5); // Bass
       
-      // Mid-bass and low-mid get mixed content
-      spectrum_accumulators_8ad[2] += (bass_content >> 1) + (abs_sample >> 2); // Bass-mid
-      spectrum_accumulators_8ad[3] += abs_sample - (bass_content >> 2); // Low-mid
+      // Bar[2]: Enhanced bass-mid for symmetrical spectrum response
+      spectrum_accumulators_8ad[2] += abs_sample + (bass_content >> 1) + (treble_content >> 2); // Full raw + bass + treble mix
       
-      // Pure mid gets raw signal
-      spectrum_accumulators_8ad[4] += abs_sample; // Mid
+      // Bar[3] and Bar[4]: AGGRESSIVE guitar/vocal frequency targeting
+      spectrum_accumulators_8ad[3] += abs_sample + (treble_content >> 1); // Low-mid: DOUBLE treble content
+      spectrum_accumulators_8ad[4] += abs_sample + treble_content; // Mid: FULL treble content for maximum guitar response
       
-      // High-mid and treble get treble content + baseline boost  
-      spectrum_accumulators_8ad[5] += (abs_sample >> 1) + (treble_content >> 1); // High-mid
-      spectrum_accumulators_8ad[6] += treble_content + (abs_sample >> 5); // Treble
-      spectrum_accumulators_8ad[7] += treble_content + (treble_content >> 1) + (abs_sample >> 6); // High treble
+      // Bar[5] and Bar[6]: MAXIMUM high-frequency sensitivity for cymbals/hi-hats  
+      spectrum_accumulators_8ad[5] += abs_sample + treble_content + (treble_content >> 1); // High-mid: raw + 150% treble
+      spectrum_accumulators_8ad[6] += abs_sample + (abs_sample >> 3); // Treble: gentle processing like Bar[0] but with actual sample data
       
-      // Simple baseline activity for all bands - single loop
+      // Simple baseline activity for 7 bands
       int baseline = abs_sample >> 7;
-      spectrum_accumulators_8ad[0] += baseline;
-      spectrum_accumulators_8ad[1] += baseline;
-      spectrum_accumulators_8ad[2] += baseline;
-      spectrum_accumulators_8ad[3] += baseline;
-      spectrum_accumulators_8ad[4] += baseline;
-      spectrum_accumulators_8ad[5] += baseline;
-      spectrum_accumulators_8ad[6] += baseline;
-      spectrum_accumulators_8ad[7] += baseline;
+      for(int i = 0; i < 7; i++) {
+        spectrum_accumulators_8ad[i] += baseline;
+      }
     }
     spectrum_sample_count_8ad += MIXBUF_SIZE;
   } else {
