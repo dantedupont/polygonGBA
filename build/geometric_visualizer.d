@@ -17,7 +17,9 @@ geometric_visualizer.o: \
  /opt/devkitpro/libgba/include/gba_systemcalls.h \
  /opt/devkitpro/libgba/include/gba_timers.h \
  /opt/devkitpro/libgba/include/gba_video.h \
- /Users/dantedupont/repos/polygonGBA/source/8ad_player.h
+ /Users/dantedupont/repos/polygonGBA/source/8ad_player.h \
+ /Users/dantedupont/repos/polygonGBA/source/font.h \
+ /opt/devkitpro/libgba/include/gba_types.h
 /Users/dantedupont/repos/polygonGBA/source/geometric_visualizer.h:
 /opt/devkitpro/libgba/include/gba.h:
 /opt/devkitpro/libgba/include/gba_affine.h:
@@ -36,3 +38,5 @@ geometric_visualizer.o: \
 /opt/devkitpro/libgba/include/gba_timers.h:
 /opt/devkitpro/libgba/include/gba_video.h:
 /Users/dantedupont/repos/polygonGBA/source/8ad_player.h:
+/Users/dantedupont/repos/polygonGBA/source/font.h:
+/opt/devkitpro/libgba/include/gba_types.h:

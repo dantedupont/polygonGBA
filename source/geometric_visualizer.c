@@ -32,22 +32,50 @@ static long previous_total = 0;
 void init_geometric_visualizer(void) {
     if (is_initialized) return;
     
-    // PHASE 1: MINIMAL MODE 1 TEST - Switch to Mode 1 and create one simple scaling tile
-    // Enable BG0 for text, BG2 for our graphics, and sprites
-    SetMode(MODE_1 | BG0_ENABLE | BG2_ENABLE | OBJ_ENABLE | OBJ_1D_MAP);
+    // CRITICAL: Clear Mode 3 framebuffer data before switching to Mode 1
+    // This prevents old pixel data from being interpreted as corrupt tile data
+    u16* framebuffer = (u16*)0x6000000;
+    for (int i = 0; i < 240 * 160; i++) {
+        framebuffer[i] = 0; // Clear all framebuffer data
+    }
     
-    // Configure BG0 for text compatibility (ensure track title still shows)
-    // Use character base 1 to match where init_font_tiles() puts the font data
-    REG_BG0CNT = BG_SIZE_0 | BG_16_COLOR | CHAR_BASE(1) | SCREEN_BASE(29);
+    // Switch to Mode 1 - focus on getting BG0 text working first
+    // Enable ONLY BG0 for now to debug text display
+    SetMode(MODE_1 | BG0_ENABLE | OBJ_ENABLE | OBJ_1D_MAP);
     
-    // Initialize font system for tile-based text rendering in Mode 1
+    // Initialize font system FIRST before setting up BG0
     init_font_tiles();
     
-    // Set up text palette on BG palette
-    BG_PALETTE[0] = RGB5(0, 0, 15);     // Blue background for text area
-    BG_PALETTE[1] = RGB5(31, 31, 0);    // Yellow text color
-    BG_PALETTE[16] = RGB5(0, 0, 15);    // Blue background for text area (palette 1)
-    BG_PALETTE[17] = RGB5(31, 31, 0);   // Yellow text color (palette 1)
+    // DEBUG: Create test tiles at high indices to avoid font conflicts
+    u16* char_mem = (u16*)0x6000000; // Character base 0
+    u16* test_tile = &char_mem[100 * 16]; // Tile 100: well past font tiles (1-96)
+    
+    // Create a very simple solid yellow square for testing
+    for (int i = 0; i < 16; i++) {
+        test_tile[i] = 0x1111; // All pixels use palette color 1 (yellow)
+    }
+    
+    // Also try a different tile pattern at tile 101 for extra testing
+    u16* test_tile2 = &char_mem[101 * 16]; // Tile 101
+    for (int i = 0; i < 16; i++) {
+        test_tile2[i] = 0x2222; // All pixels use palette color 2 (magenta)
+    }
+    
+    // Configure BG0 for text with highest priority (0 = highest)
+    // Try character base 0 now since we moved our test tiles there
+    REG_BG0CNT = BG_SIZE_0 | BG_16_COLOR | BG_PRIORITY(0) | CHAR_BASE(0) | SCREEN_BASE(29);
+    
+    // DEBUG: Also set scroll position to make sure BG0 is visible
+    REG_BG0HOFS = 0;
+    REG_BG0VOFS = 0;
+    
+    // Clear BG0 tilemap explicitly
+    u16* textMap = (u16*)SCREEN_BASE_BLOCK(29); // BG0 uses screen base 29
+    for (int i = 0; i < 1024; i++) {
+        textMap[i] = 0; // Clear all tilemap entries
+    }
+    
+    // Palette already set up above - don't duplicate
     
     // Configure BG2 for hardware scaling (rotation/scaling background)  
     // In Mode 1, BG2 is affine (rotation/scaling) - needs different setup
@@ -56,72 +84,120 @@ void init_geometric_visualizer(void) {
     // Create a simple test tile in character block 1
     u8* tile_mem = (u8*)(0x6004000); // Character base 1
     
-    // Clear character block first
-    for (int i = 0; i < 16384; i++) { // 16KB character block
+    // Clear ALL character blocks to ensure clean slate (64KB total)
+    for (int i = 0; i < 65536; i++) { // Clear all 64KB of character memory
         tile_mem[i] = 0;
     }
     
-    // Create tile 100: Simple test pattern (8x8 pixels, 256-color = 64 bytes)
-    // Use tile 100+ to avoid conflict with font tiles (0-95)
-    u8* tile1 = tile_mem + (100 * 64); // Tile 100 offset
-    for (int y = 0; y < 8; y++) {
-        for (int x = 0; x < 8; x++) {
-            if (x == 0 || x == 7 || y == 0 || y == 7) {
-                tile1[y * 8 + x] = 1; // Border - palette color 1
-            } else {
-                tile1[y * 8 + x] = 2; // Fill - palette color 2  
-            }
-        }
+    // TODO(human): BG2 test tile creation temporarily removed for text debugging
+    // Will re-add BG2 affine transformation system once text rendering works
+    
+    // Clear ALL screen base memory (used for tilemaps)
+    u16* screen_mem = (u16*)(0x6006000); // Start of screen base memory
+    for (int i = 0; i < 16384; i++) { // Clear all 32KB of screen base memory
+        screen_mem[i] = 0;
     }
     
-    // Set up BG2 tilemap in screen base 30
-    u16* bg2_map = (u16*)(0x6007800); // Screen base 30
+    // Set up BG palette for text rendering
+    BG_PALETTE[0] = RGB5(0, 0, 0);      // Transparent/black background  
+    BG_PALETTE[1] = RGB5(31, 31, 0);    // Yellow text color
+    BG_PALETTE[2] = RGB5(31, 0, 31);    // Magenta for test tiles
+    BG_PALETTE[3] = RGB5(0, 0, 15);     // Blue for text area background
     
-    // Clear tilemap
-    for (int i = 0; i < 1024; i++) {
-        bg2_map[i] = 0; // All tiles start as transparent
-    }
+    // TODO(human): BG2 transformation setup temporarily removed for text debugging
     
-    // Place one test tile in center of 32x32 map
-    int center = 16 * 32 + 16;
-    bg2_map[center] = 100; // Use tile 100
-    
-    // Set up palette
-    BG_PALETTE[0] = RGB5(0, 0, 0);      // Transparent black
-    BG_PALETTE[1] = RGB5(31, 0, 0);     // Red border
-    BG_PALETTE[2] = RGB5(31, 31, 0);    // Yellow fill
-    
-    // Initialize BG2 transformation to normal scale
-    REG_BG2PA = 256; REG_BG2PB = 0;    // No rotation, 1.0x scale
-    REG_BG2PC = 0;   REG_BG2PD = 256;
-    REG_BG2X = 0;    REG_BG2Y = 0;     // No offset
-    
-    // PHASE 1: Since sprites work perfectly, implement geometric visualizer with sprites
-    // Create sprite palette for geometric shapes
+    // Enhanced sprite palette for animated hexagon
+    // Palette 0: Orange/Red theme
     SPRITE_PALETTE[0] = RGB5(0, 0, 0);      // Transparent
-    SPRITE_PALETTE[1] = RGB5(31, 15, 0);    // Orange center
-    SPRITE_PALETTE[2] = RGB5(31, 31, 0);    // Yellow middle ring
-    SPRITE_PALETTE[3] = RGB5(15, 31, 15);   // Green outer ring
+    SPRITE_PALETTE[1] = RGB5(31, 0, 0);     // Bright red
+    SPRITE_PALETTE[2] = RGB5(31, 15, 0);    // Orange  
+    SPRITE_PALETTE[3] = RGB5(31, 31, 0);    // Yellow
+    
+    // Palette 1: Blue/Cyan theme  
+    SPRITE_PALETTE[16] = RGB5(0, 0, 0);     // Transparent
+    SPRITE_PALETTE[17] = RGB5(0, 0, 31);    // Bright blue
+    SPRITE_PALETTE[18] = RGB5(0, 15, 31);   // Light blue
+    SPRITE_PALETTE[19] = RGB5(0, 31, 31);   // Cyan
+    
+    // Palette 2: Green theme
+    SPRITE_PALETTE[32] = RGB5(0, 0, 0);     // Transparent  
+    SPRITE_PALETTE[33] = RGB5(0, 31, 0);    // Bright green
+    SPRITE_PALETTE[34] = RGB5(15, 31, 15);  // Light green
+    SPRITE_PALETTE[35] = RGB5(31, 31, 15);  // Yellow-green
+    
+    // Palette 3: Purple/Magenta theme
+    SPRITE_PALETTE[48] = RGB5(0, 0, 0);     // Transparent
+    SPRITE_PALETTE[49] = RGB5(31, 0, 31);   // Magenta
+    SPRITE_PALETTE[50] = RGB5(20, 0, 31);   // Purple
+    SPRITE_PALETTE[51] = RGB5(31, 15, 31);  // Pink
     
     // Create geometric sprite tiles at safe location
     u32* spriteGfx = (u32*)(0x6014000); // Safe sprite memory
     
-    // Tile 0: Solid center (small square)
-    u32 center_pattern = 0x11111111; // Orange center
+    // Tile 0: Solid circle pattern
+    u32 circle_pattern[16] = {
+        0x00000000, // ........
+        0x00111000, // ..***...
+        0x01222100, // .*##*...
+        0x12222210, // *####*..
+        0x12222210, // *####*..
+        0x12222210, // *####*..
+        0x01222100, // .*##*...
+        0x00111000, // ..***...
+        0x00000000, // ........
+        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000
+    };
     for (int i = 0; i < 16; i++) {
-        spriteGfx[i] = center_pattern;
+        spriteGfx[i] = circle_pattern[i];
     }
     
-    // Tile 1: Middle ring pattern
-    u32 ring_pattern = 0x22222222; // Yellow ring
+    // Tile 1: Ring/outline pattern
+    u32 ring_pattern[16] = {
+        0x00000000, // ........
+        0x00111000, // ..***...
+        0x01000100, // .*...*..
+        0x10000010, // *....**.
+        0x10000010, // *....**.
+        0x10000010, // *....**.
+        0x01000100, // .*...*..
+        0x00111000, // ..***...
+        0x00000000, // ........
+        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000
+    };
     for (int i = 0; i < 16; i++) {
-        spriteGfx[16 + i] = ring_pattern;
+        spriteGfx[16 + i] = ring_pattern[i];
     }
     
-    // Tile 2: Outer ring pattern  
-    u32 outer_pattern = 0x33333333; // Green outer
+    // Tile 2: Cross pattern  
+    u32 cross_pattern[16] = {
+        0x00010000, // ...*....
+        0x00010000, // ...*....
+        0x00010000, // ...*....
+        0x11111110, // ******.
+        0x11111110, // ******.
+        0x00010000, // ...*....
+        0x00010000, // ...*....
+        0x00010000, // ...*....
+        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000
+    };
     for (int i = 0; i < 16; i++) {
-        spriteGfx[32 + i] = outer_pattern;
+        spriteGfx[32 + i] = cross_pattern[i];
+    }
+    
+    // Tile 3: Diamond pattern
+    u32 diamond_pattern[16] = {
+        0x00010000, // ...*....
+        0x00121000, // ..*#*...
+        0x01232100, // .*##*...
+        0x12332210, // *###*...
+        0x12332210, // *###*...
+        0x01232100, // .*##*...
+        0x00121000, // ..*#*...
+        0x00010000, // ...*....
+        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000
+    };
+    for (int i = 0; i < 16; i++) {
+        spriteGfx[48 + i] = diamond_pattern[i];
     }
     
     // Set up initial geometric pattern - 3 sprites forming basic shape
@@ -172,7 +248,7 @@ void update_geometric_visualizer(void) {
 void render_geometric_hexagon(void) {
     if (!is_initialized) return;
     
-    // PHASE 1: SPRITE-BASED GEOMETRIC VISUALIZER - Audio reactive sprite positioning
+    // AUDIO-REACTIVE HEXAGON VISUALIZER
     
     // Calculate audio reactivity
     total_amplitude = 0;
@@ -180,56 +256,57 @@ void render_geometric_hexagon(void) {
         total_amplitude += spectrum_accumulators_8ad[i];
     }
     
-    // Calculate expansion based on audio
-    int expansion = 0; // Default - no expansion
+    // Calculate scaling and color based on audio
+    int base_radius = 20; // Base hexagon radius
+    int audio_scale = 0;
+    int color_intensity = 0;
+    
     if (spectrum_sample_count_8ad > 0) {
         long avg_amplitude = total_amplitude / 8;
-        // Scale expansion from 0 to 16 pixels based on audio
-        expansion = (avg_amplitude * 16) / (spectrum_sample_count_8ad * 50);
-        if (expansion > 16) expansion = 16; // Cap expansion
-        if (expansion < 0) expansion = 0;   // Floor expansion
+        // Scale radius from base to base+24 pixels based on audio
+        audio_scale = (avg_amplitude * 24) / (spectrum_sample_count_8ad * 50);
+        if (audio_scale > 24) audio_scale = 24;
+        if (audio_scale < 0) audio_scale = 0;
+        
+        // Color intensity based on audio (0-7 for palette cycling)
+        color_intensity = (avg_amplitude * 7) / (spectrum_sample_count_8ad * 100);
+        if (color_intensity > 7) color_intensity = 7;
+        if (color_intensity < 0) color_intensity = 0;
     }
     
-    // Center sprite position (fixed)
-    int center_x = 115;
-    int center_y = 75;
+    int current_radius = base_radius + audio_scale;
     
-    // Update center sprite (always visible)
-    OAM[0].attr0 = ATTR0_NORMAL | ATTR0_COLOR_16 | ATTR0_SQUARE | (center_y & 0xFF);
-    OAM[0].attr1 = ATTR1_SIZE_8 | (center_x & 0x01FF);
-    OAM[0].attr2 = ATTR2_PALETTE(0) | 512; // Orange center
+    // Center position
+    int center_x = 120;
+    int center_y = 80;
     
-    // Update ring sprites - expand outward based on audio
-    int ring_distance = 8 + expansion; // Base distance + audio expansion
+    // Rotation animation - increment rotation angle each frame
+    static int rotation_angle = 0;
+    rotation_angle = (rotation_angle + 2) % 360; // Rotate 2 degrees per frame
     
-    // Ring sprite positions (4 sprites around center forming basic geometric pattern)
-    OAM[1].attr0 = ATTR0_NORMAL | ATTR0_COLOR_16 | ATTR0_SQUARE | ((center_y - ring_distance) & 0xFF);
-    OAM[1].attr1 = ATTR1_SIZE_8 | ((center_x - ring_distance) & 0x01FF);
-    OAM[1].attr2 = ATTR2_PALETTE(0) | 513; // Yellow ring
+    // Create hexagon using 6 sprites positioned at hexagon vertices
+    // Hexagon vertices are at 60-degree intervals: 0°, 60°, 120°, 180°, 240°, 300°
+    for (int i = 0; i < 6; i++) {
+        int vertex_angle = (i * 60 + rotation_angle) % 360;
+        
+        // Calculate vertex position using our trigonometric functions
+        int vertex_x = center_x + (cos_approx(vertex_angle) * current_radius) / 256;
+        int vertex_y = center_y + (sin_approx(vertex_angle) * current_radius) / 256;
+        
+        // Choose sprite tile and palette based on audio intensity and vertex
+        int tile_index = 512 + (color_intensity % 4); // Cycle through our 4 tile types (circle, ring, cross, diamond)
+        int palette_offset = (color_intensity + i) % 4; // Create color variation per vertex
+        
+        // Position sprite at vertex
+        OAM[i].attr0 = ATTR0_NORMAL | ATTR0_COLOR_16 | ATTR0_SQUARE | (vertex_y & 0xFF);
+        OAM[i].attr1 = ATTR1_SIZE_8 | (vertex_x & 0x01FF);
+        OAM[i].attr2 = ATTR2_PALETTE(palette_offset) | tile_index;
+    }
     
-    OAM[2].attr0 = ATTR0_NORMAL | ATTR0_COLOR_16 | ATTR0_SQUARE | ((center_y - ring_distance) & 0xFF);
-    OAM[2].attr1 = ATTR1_SIZE_8 | ((center_x + ring_distance) & 0x01FF);
-    OAM[2].attr2 = ATTR2_PALETTE(0) | 513; // Yellow ring
-    
-    // Add more ring sprites for fuller geometric effect
-    OAM[3].attr0 = ATTR0_NORMAL | ATTR0_COLOR_16 | ATTR0_SQUARE | ((center_y + ring_distance) & 0xFF);
-    OAM[3].attr1 = ATTR1_SIZE_8 | ((center_x - ring_distance) & 0x01FF);
-    OAM[3].attr2 = ATTR2_PALETTE(0) | 513; // Yellow ring
-    
-    OAM[4].attr0 = ATTR0_NORMAL | ATTR0_COLOR_16 | ATTR0_SQUARE | ((center_y + ring_distance) & 0xFF);
-    OAM[4].attr1 = ATTR1_SIZE_8 | ((center_x + ring_distance) & 0x01FF);
-    OAM[4].attr2 = ATTR2_PALETTE(0) | 513; // Yellow ring
-    
-    // Outer ring with larger expansion
-    int outer_distance = 16 + (expansion * 2); // Larger expansion multiplier
-    
-    OAM[5].attr0 = ATTR0_NORMAL | ATTR0_COLOR_16 | ATTR0_SQUARE | ((center_y - outer_distance) & 0xFF);
-    OAM[5].attr1 = ATTR1_SIZE_8 | (center_x & 0x01FF);
-    OAM[5].attr2 = ATTR2_PALETTE(0) | 514; // Green outer
-    
-    OAM[6].attr0 = ATTR0_NORMAL | ATTR0_COLOR_16 | ATTR0_SQUARE | ((center_y + outer_distance) & 0xFF);
+    // Add center sprite for visual anchor
+    OAM[6].attr0 = ATTR0_NORMAL | ATTR0_COLOR_16 | ATTR0_SQUARE | (center_y & 0xFF);
     OAM[6].attr1 = ATTR1_SIZE_8 | (center_x & 0x01FF);
-    OAM[6].attr2 = ATTR2_PALETTE(0) | 514; // Green outer
+    OAM[6].attr2 = ATTR2_PALETTE(color_intensity % 4) | 512; // Center uses base tile with audio color
     
     // Disable remaining sprites
     for (int i = 7; i < 128; i++) {
@@ -268,24 +345,32 @@ static void draw_track_info_tiles(void) {
     // Clear the text area first (fill with blue background tiles)
     u16* textMap = (u16*)SCREEN_BASE_BLOCK(29); // BG0 uses screen base 29
     
-    // Create a blue background tile in tile 96 (right after font tiles 0-95)
-    u16* bgTile = (u16*)CHAR_BASE_ADR(1) + (96 * 16); // Character base 1, tile 96
+    // Create a blue background tile for text area ONLY (tile 97)
+    u16* bgTile = (u16*)CHAR_BASE_ADR(1) + (97 * 16); // Character base 1, tile 97
     for (int i = 0; i < 16; i++) {
-        bgTile[i] = 0x0000; // All pixels use palette color 0 (blue background)
+        bgTile[i] = 0x3333; // All pixels use palette color 3 (blue for text background)
     }
     
-    // Fill bottom 3 rows with blue background
+    // Create a test pattern tile for debugging (tile 98)  
+    u16* testTile = (u16*)CHAR_BASE_ADR(1) + (98 * 16);
+    for (int i = 0; i < 16; i++) {
+        testTile[i] = 0x2222; // All pixels use palette color 2 (should show magenta)
+    }
+    
+    // Fill bottom 3 rows with alternating background and test tiles for debugging
     for (int ty = 17; ty < 20; ty++) {
         for (int tx = 0; tx < 30; tx++) {
-            textMap[ty * 32 + tx] = 96; // Use blue background tile (tile 96)
+            if (tx % 2 == 0) {
+                textMap[ty * 32 + tx] = 97; // Blue background tile (color 0)
+            } else {
+                textMap[ty * 32 + tx] = 98; // Magenta test tile (color 2)  
+            }
         }
     }
     
-    // Draw track name on row 17 (tile_y = 17)
-    draw_text_bg0(1, 17, track_name);
-    
-    // Draw visualization name on row 18 (tile_y = 18) 
-    draw_text_bg0(1, 18, viz_name);
+    // Display track and visualization info
+    draw_text_bg0(1, 18, track_name);
+    draw_text_bg0(1, 19, viz_name);
 }
 
 // Custom text drawing function for BG0 (screen base 29)
@@ -294,13 +379,20 @@ static void draw_text_bg0(int tile_x, int tile_y, const char* text) {
     const char* ptr = text;
     int x = tile_x;
     
+    // Clear the text line first
+    for (int i = 0; i < 30; i++) {
+        textMap[tile_y * 32 + i] = 0; // Use tile 0 (transparent background)
+    }
+    
     // Draw each character as a tile
     while (*ptr && x < 30) {
         char c = *ptr++;
         
         if (c >= 32 && c <= 126) {
             int tile_index = (c - 32) + 1; // +1 because tile 0 is reserved for space
-            textMap[tile_y * 32 + x] = tile_index | (1 << 12); // Use palette 1 (yellow text)
+            textMap[tile_y * 32 + x] = tile_index; // Use palette 0 first to test
+        } else {
+            textMap[tile_y * 32 + x] = 0; // Use blank tile for non-printable chars
         }
         x++;
     }
