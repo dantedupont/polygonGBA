@@ -1,5 +1,6 @@
 #include "waveform_visualizer.h"
 #include "8ad_player.h"
+#include "visualization_manager.h"
 
 // Waveform visualizer state
 static bool is_initialized = false;
@@ -24,6 +25,9 @@ static int smoothed_amplitude = 10; // Smoothed amplitude to reduce jitter
 void init_waveform_visualizer(void) {
     if (is_initialized) return;
     
+    // MODE_1: No mode switching needed - everything uses MODE_1 now
+    // SetMode already handled by main.c or visualization_manager
+    
     // Clear waveform sample buffer
     for (int i = 0; i < WAVEFORM_SAMPLES; i++) {
         waveform_samples[i] = 0;
@@ -37,23 +41,27 @@ void init_waveform_visualizer(void) {
     
     // Don't clear the framebuffer in init - let each mode handle its own background
     
-    // Set up palette for waveform - use BRIGHT colors to ensure visibility
-    SPRITE_PALETTE[0] = RGB5(0, 0, 0);      // Transparent
-    SPRITE_PALETTE[1] = RGB5(31, 31, 31);   // BRIGHT WHITE for maximum visibility
-    SPRITE_PALETTE[2] = RGB5(31, 0, 31);    // BRIGHT MAGENTA
-    SPRITE_PALETTE[3] = RGB5(0, 31, 0);     // BRIGHT GREEN
-    SPRITE_PALETTE[4] = RGB5(31, 31, 0);    // BRIGHT YELLOW
+    // Set up palette 8 for waveform (avoid conflict with spectrum palettes 0-7)
+    SPRITE_PALETTE[8 * 16 + 0] = RGB5(0, 0, 0);      // Transparent
+    SPRITE_PALETTE[8 * 16 + 1] = RGB5(0, 31, 0);     // BRIGHT GREEN for waveform circles
+    SPRITE_PALETTE[8 * 16 + 2] = RGB5(31, 31, 31);   // BRIGHT WHITE  
+    SPRITE_PALETTE[8 * 16 + 3] = RGB5(31, 0, 31);    // BRIGHT MAGENTA
+    SPRITE_PALETTE[8 * 16 + 4] = RGB5(31, 31, 0);    // BRIGHT YELLOW
     
-    // Create waveform sprite tiles at the very beginning of sprite memory
-    u32* spriteGfx = (u32*)(0x6014000); // Start of sprite graphics memory
+    // MODE_1: Create waveform sprite tile at index 110 (after spectrum tiles 100-107)
+    u32* spriteGfx = (u32*)0x6010000; // MODE_1 standard sprite memory
+    int waveform_tile_index = 110;
+    u32 pixel_data = 0x11111111; // All pixels use palette color 1 (bright green)
     
-    // Create a bright solid tile pattern for the waveform
-    u32 waveform_pattern = 0x33333333; // All pixels use color 3 (bright green from palette)
+    // Create 8x8 solid tile for waveform dots
+    for(int row = 0; row < 8; row++) {
+        spriteGfx[(waveform_tile_index * 8) + row] = pixel_data;
+    }
     
-    // Don't create tiles in init - we'll overwrite spectrum tiles during render
+    // Sprite creation moved to render function - no initialization needed here
     
-    // Clear OAM
-    for (int i = 0; i < 128; i++) {
+    // Clear only waveform's OAM entries (0-119, up to 120 sprites)
+    for (int i = 0; i < 120; i++) {
         OAM[i].attr0 = ATTR0_DISABLED;
         OAM[i].attr1 = 0;
         OAM[i].attr2 = 0;
@@ -65,8 +73,8 @@ void init_waveform_visualizer(void) {
 void cleanup_waveform_visualizer(void) {
     if (!is_initialized) return;
     
-    // Clear all OAM entries
-    for (int i = 0; i < 128; i++) {
+    // Clear only waveform's OAM entries (0-119, up to 120 sprites)
+    for (int i = 0; i < 120; i++) {
         OAM[i].attr0 = ATTR0_DISABLED;
         OAM[i].attr1 = 0;
         OAM[i].attr2 = 0;
@@ -182,19 +190,7 @@ void update_waveform_visualizer(void) {
     }
 }
 
-// Helper function to choose appropriate sprite tile based on line slope
-static int choose_line_tile(int dy) {
-    if (dy == 0) return 0; // Horizontal line
-    if (dy > 0) {
-        if (dy <= 2) return 1; // Slight upward
-        if (dy <= 5) return 2; // Medium upward
-        return 3; // Steep upward
-    } else {
-        if (dy >= -2) return 4; // Slight downward
-        if (dy >= -5) return 5; // Medium downward
-        return 6; // Steep downward
-    }
-}
+// Unused helper function removed
 
 void render_waveform(void) {
     if (!is_initialized) return;
@@ -246,23 +242,27 @@ void render_waveform(void) {
     
     // Clean waveform display - no debug lines needed
     
-    // Overwrite spectrum's first tiles with our green pattern
-    u32* spriteGfx = (u32*)(0x6014000);
-    u32 waveform_pattern = 0x33333333; // Green pattern
-    int waveform_tile = 512; // Use spectrum's first tile
+    // MODE_1: Use pre-created tile from init function
+    int waveform_tile = 110; // Our waveform tile from init
     
-    // Just overwrite one tile for smaller 8x8 sprites
-    for (int row = 0; row < 8; row++) {
-        spriteGfx[waveform_tile * 8 + row] = waveform_pattern;
-    }
+    // DEBUG: Store tile info for debugging
+    SPRITE_PALETTE[24] = waveform_tile; // Store which tile we're using (110)
+    u32* spriteGfx = (u32*)0x6010000; // MODE_1 sprite memory
+    SPRITE_PALETTE[25] = (spriteGfx[waveform_tile * 8] & 0xFFFF); // Store tile data check
+    
+    // DEBUG: Store current visualization mode for debugging
+    SPRITE_PALETTE[26] = get_current_visualization(); // Should be 1 (VIZ_WAVEFORM) when in waveform
     
     // Animate wave phase for flowing effect
     wave_phase += 3; // Speed of wave animation
     
     int sprite_count = 0;
+    int attempted_sprites = 0; // DEBUG: Count how many sprites we try to create
+    int failed_bounds = 0;     // DEBUG: Count how many fail bounds check
     
     // Create flowing sine wave using smaller 8x8 sprites
     for (int x = 0; x < WAVEFORM_WIDTH; x += 8) { // Every 8 pixels for thinner wave
+        attempted_sprites++; // DEBUG: Count every attempt
         // Simple sine wave calculation
         int angle = ((x + wave_phase) * 360) / 80; // Wave frequency
         angle = angle % 360;
@@ -288,13 +288,32 @@ void render_waveform(void) {
         if (wave_x >= 0 && wave_x < 240 && wave_y >= 0 && wave_y < 160 && sprite_count < 120) {
             OAM[sprite_count].attr0 = ATTR0_NORMAL | ATTR0_COLOR_16 | ATTR0_SQUARE | (wave_y & 0xFF);
             OAM[sprite_count].attr1 = ATTR1_SIZE_8 | (wave_x & 0x01FF); // 8x8 sprites instead of 32x8
-            OAM[sprite_count].attr2 = ATTR2_PALETTE(0) | waveform_tile;
+            OAM[sprite_count].attr2 = ATTR2_PALETTE(8) | waveform_tile; // Use palette 8 with green color
             sprite_count++;
+        } else {
+            failed_bounds++; // DEBUG: Count failed boundary checks
         }
     }
     
-    // Disable unused sprites
-    while (sprite_count < 128) {
+    // DEBUG: Store debug values in global area for main.c to display
+    // We'll abuse some unused sprite palette entries as debug storage
+    SPRITE_PALETTE[16] = sprite_count;        // Number of sprites created
+    SPRITE_PALETTE[17] = attempted_sprites;   // Number of attempts 
+    SPRITE_PALETTE[18] = failed_bounds;       // Number that failed bounds
+    SPRITE_PALETTE[19] = current_amplitude;   // Current amplitude value
+    
+    // DEBUG: Store first few sprite positions to see what's happening
+    if (sprite_count > 0) {
+        SPRITE_PALETTE[20] = OAM[0].attr0 & 0xFF;   // First sprite Y position
+        SPRITE_PALETTE[21] = OAM[0].attr1 & 0x1FF;  // First sprite X position
+    }
+    if (sprite_count > 10) {
+        SPRITE_PALETTE[22] = OAM[10].attr0 & 0xFF;  // 11th sprite Y position  
+        SPRITE_PALETTE[23] = OAM[10].attr1 & 0x1FF; // 11th sprite X position
+    }
+    
+    // Disable only waveform's unused sprites (up to 120, don't touch geometric's OAM[127])
+    while (sprite_count < 120) {
         OAM[sprite_count].attr0 = ATTR0_DISABLED;
         sprite_count++;
     }

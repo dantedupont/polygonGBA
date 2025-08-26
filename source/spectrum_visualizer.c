@@ -14,49 +14,40 @@ static bool is_initialized = false;
 void init_spectrum_visualizer(void) {
     if (is_initialized) return;
     
-    // Only create sprite tiles when we're actually in spectrum mode
-    // Other modes (waveform, geometric) should have clean tile access
-    // Set up sprite palette for spectrum bars
-    SPRITE_PALETTE[0] = RGB5(0, 0, 0);      // Transparent
-    SPRITE_PALETTE[1] = RGB5(0, 15, 31);    // Blue (low frequencies)
-    SPRITE_PALETTE[2] = RGB5(0, 31, 15);    // Green-blue 
-    SPRITE_PALETTE[3] = RGB5(0, 31, 0);     // Green (mid frequencies)
-    SPRITE_PALETTE[4] = RGB5(15, 31, 0);    // Yellow-green
-    SPRITE_PALETTE[5] = RGB5(31, 31, 0);    // Yellow (high frequencies)
-    SPRITE_PALETTE[6] = RGB5(31, 15, 0);    // Orange
-    SPRITE_PALETTE[7] = RGB5(31, 0, 0);     // Red (very high frequencies)
-    SPRITE_PALETTE[8] = RGB5(31, 0, 31);    // Bright magenta for bar 8
+    // MODE_1: No mode switching needed - everything uses MODE_1 now
+    // SetMode already handled by main.c or visualization_manager
     
-    // Only create sprite tiles if we're actually in spectrum mode
-    // This allows other visualizers (waveform, geometric) to use clean tile memory
-    if (get_current_visualization() == VIZ_SPECTRUM_BARS) {
-        // In Mode 3, framebuffer is 0x6000000-0x6012C00, so sprites must be after that
-        u32* spriteGfx = (u32*)(0x6014000); // Safe location after Mode 3 framebuffer
+    // Set up 8 different sprite palettes for colorful frequency bars
+    // Each palette has 16 colors, we use color 1 for the bar color
+    for(int pal = 0; pal < 8; pal++) {
+        SPRITE_PALETTE[pal * 16 + 0] = RGB5(0, 0, 0);  // Transparent
         
-        // Create 32x8 tiles for ULTRA WIDE, MASSIVE height bars with no color bleeding
-        // Each bar gets completely separate tile memory space
-        for(int bar = 0; bar < NUM_BARS; bar++) {
-        u32 base_color = bar + 1; // Use different colors for each bar
+        // Assign different colors per frequency band
+        if (pal == 0) SPRITE_PALETTE[pal * 16 + 1] = RGB5(0, 15, 31);    // Blue (bass)
+        else if (pal == 1) SPRITE_PALETTE[pal * 16 + 1] = RGB5(0, 20, 25);    // Blue-cyan
+        else if (pal == 2) SPRITE_PALETTE[pal * 16 + 1] = RGB5(0, 31, 15);    // Green-blue 
+        else if (pal == 3) SPRITE_PALETTE[pal * 16 + 1] = RGB5(0, 31, 0);     // Green (mids)
+        else if (pal == 4) SPRITE_PALETTE[pal * 16 + 1] = RGB5(15, 31, 0);    // Yellow-green
+        else if (pal == 5) SPRITE_PALETTE[pal * 16 + 1] = RGB5(31, 31, 0);    // Yellow (highs)
+        else if (pal == 6) SPRITE_PALETTE[pal * 16 + 1] = RGB5(31, 15, 0);    // Orange
+        else if (pal == 7) SPRITE_PALETTE[pal * 16 + 1] = RGB5(31, 0, 0);     // Red (treble)
+    }
+    
+    // MODE_1: Standard sprite memory at 0x6010000, tiles 100+ (after font tiles 0-95)
+    u32* spriteGfx = (u32*)0x6010000; // Standard sprite tile memory for MODE_1
+    
+    // Create 8 solid color tiles for spectrum bars (tiles 100-107)
+    for(int tile = 0; tile < 8; tile++) {
+        int tile_index = 100 + tile; // Start at tile 100 to avoid font conflicts
+        u32 pixel_data = 0x11111111; // All pixels use palette color 1
         
-        // Create 32x8 sprite data: each 32x8 sprite uses 4 consecutive 8x8 tiles
-        u32 pixel_data = (base_color << 0) | (base_color << 4) | (base_color << 8) | (base_color << 12) |
-                        (base_color << 16) | (base_color << 20) | (base_color << 24) | (base_color << 28);
-        
-        // Each bar gets 12 tile quads (48 tiles total per bar) - no overlap!
-        for(int tile_quad = 0; tile_quad < TILES_PER_BAR; tile_quad++) {
-            int base_tile = (bar * TILES_PER_BAR + tile_quad) * 4; // Each 32x8 uses 4 8x8 tiles
-            
-            // Create all 4 tiles for this 32x8 sprite
-            for(int subtile = 0; subtile < 4; subtile++) {
-                for(int row = 0; row < 8; row++) {
-                    spriteGfx[(base_tile + subtile) * 8 + row] = pixel_data;
-                }
-            }
-        }
+        // Each 8x8 tile needs 8 rows of data (32 bytes = 8 u32s)
+        for(int row = 0; row < 8; row++) {
+            spriteGfx[(tile_index * 8) + row] = pixel_data;
         }
     }
     
-    // Clear OAM
+    // Clear all OAM entries (spectrum uses many sprites so it can clear everything)
     for(int i = 0; i < 128; i++) {
         OAM[i].attr0 = ATTR0_DISABLED;
         OAM[i].attr1 = 0;
@@ -86,23 +77,7 @@ void cleanup_spectrum_visualizer(void) {
     }
     adaptive_scale = 1000;
     
-    // Clear framebuffer area to remove any waveform artifacts
-    u16* framebuffer = (u16*)0x6000000;
-    u16 bg_color = RGB5(0, 0, 0);  // BLACK background (original)
-    
-    // Clear the area where waveform might have drawn (center portion of screen)
-    int start_x = (240 - 220) / 2;  // WAVEFORM_WIDTH = 220
-    int center_y = 65;
-    
-    for (int y = center_y - 60; y <= center_y + 60; y++) {
-        if (y >= 0 && y < 160) {
-            for (int x = start_x; x < start_x + 220; x++) {
-                if (x >= 0 && x < 240) {
-                    framebuffer[y * 240 + x] = bg_color;
-                }
-            }
-        }
-    }
+    // MODE_1: No framebuffer clearing needed - background handled by BG layers
     
     is_initialized = false;
 }
@@ -315,38 +290,79 @@ void update_spectrum_visualizer(void) {
 }
 
 void render_spectrum_bars(void) {
-    // Render perfectly centered, multi-tile bars
-    int sprite_index = 0;
-    int screen_center_x = 120; // GBA screen is 240 pixels wide
-    int bar_width = 32; // Each sprite is 32px wide - ULTRA WIDE bars!
-    int bar_gap = 8; // Smaller gap for 32px bars
-    int total_content = (NUM_BARS * bar_width) + ((NUM_BARS - 1) * bar_gap); // 8*32 + 7*8 = 312
-    int start_x = screen_center_x - (total_content / 2); // Perfect centering
+    // Create spectrum bar sprites directly in OAM (same approach as waveform)
+    // Only create sprites when we're actually in spectrum mode
+    if (get_current_visualization() != VIZ_SPECTRUM_BARS) {
+        return;
+    }
     
-    for(int i = 0; i < NUM_BARS; i++) {
-        int bar_height = bar_current_heights[i];
-        int x = start_x + (i * (bar_width + bar_gap)); // Perfectly centered bars
-        int base_y = 100; // Bottom of bars - positioned above track title bar
+    // DEBUG: Store render call count in palette
+    static int render_calls = 0;
+    render_calls++;
+    SPRITE_PALETTE[29] = render_calls & 0xFFFF; // Track how many times this function is called
+    
+    // MODE_1: Use pre-created tiles from init function (tiles 100-107)
+    // No need to recreate tiles every frame - they're persistent in sprite memory
+    int base_tile = 100; // Our tiles start at 100
+    
+    // DEBUG: Check if sprite tile data exists at MODE_1 address
+    u32* spriteGfx = (u32*)0x6010000; // MODE_1 sprite memory
+    SPRITE_PALETTE[30] = (spriteGfx[base_tile * 8] != 0) ? 1 : 0; // Check tile 100
+    
+    // Clear all OAM entries first to ensure clean slate
+    for(int i = 0; i < 128; i++) {
+        OAM[i].attr0 = ATTR0_DISABLED;
+        OAM[i].attr1 = 0;
+        OAM[i].attr2 = 0;
+    }
+    
+    // Create 8 spectrum bars using stacked 8x8 sprites
+    int sprite_count = 0;
+    
+    // DEBUG: Store bar heights and creation info
+    SPRITE_PALETTE[25] = bar_current_heights[0]; // First bar height
+    SPRITE_PALETTE[26] = bar_current_heights[1]; // Second bar height  
+    SPRITE_PALETTE[27] = bar_current_heights[7]; // Last bar height
+    
+    // DEBUG: Store positioning info for first few bars
+    SPRITE_PALETTE[20] = 20 + (0 * 25); // Bar 0 X position (should be 20)
+    SPRITE_PALETTE[21] = 20 + (1 * 25); // Bar 1 X position (should be 45)
+    SPRITE_PALETTE[22] = 20 + (2 * 25); // Bar 2 X position (should be 70)
+    
+    for (int bar = 0; bar < NUM_BARS; bar++) {
+        // Use actual animated bar heights from physics system
+        int bar_height = bar_current_heights[bar];
         
-        // Calculate how many tiles this bar needs (each tile is 8 pixels tall)
-        int tiles_needed = (bar_height + 7) / 8; // Round up division
-        if(tiles_needed > TILES_PER_BAR) tiles_needed = TILES_PER_BAR;
+        int bar_x = 20 + (bar * 25); // Space bars evenly across screen (8 bars * 25 pixels = 200, centered)
+        int num_sprites = (bar_height + 7) / 8; // Convert height to number of 8x8 sprites needed
         
-        // Render 32x8 tiles from bottom to top - NO COLOR BLEEDING!
-        for(int tile = 0; tile < tiles_needed && sprite_index < 128; tile++) {
-            int tile_y = base_y - ((tile + 1) * 8); // Each tile 8 pixels up
-            int tile_index = ((i * TILES_PER_BAR) + tile) * 4; // Each 32x8 uses 4 8x8 tiles
+        // Limit to prevent sprite overflow
+        if (num_sprites > 15) num_sprites = 15;
+        
+        // Stack sprites from bottom to top
+        for (int sprite = 0; sprite < num_sprites; sprite++) {
+            if (sprite_count >= 128) break; // Prevent OAM overflow
             
-            OAM[sprite_index].attr0 = ATTR0_NORMAL | ATTR0_COLOR_16 | ATTR0_SQUARE | (tile_y & 0xFF);
-            OAM[sprite_index].attr1 = ATTR1_SIZE_32 | (x & 0x01FF); // 32x8 sprites - ULTRA WIDE!
-            OAM[sprite_index].attr2 = ATTR2_PALETTE(0) | (512 + tile_index); // Points to first tile
-            sprite_index++;
+            int sprite_y = 140 - (sprite * 8); // Start from bottom (Y=140) and go up
+            
+            OAM[sprite_count].attr0 = ATTR0_NORMAL | ATTR0_COLOR_16 | ATTR0_SQUARE | (sprite_y & 0xFF);
+            OAM[sprite_count].attr1 = ATTR1_SIZE_8 | (bar_x & 0x01FF);
+            // MODE_1: Each bar uses its own tile (100+bar) with its own palette
+            int bar_palette = bar % 8; // Use palettes 0-7 for bars 0-7  
+            int bar_tile = base_tile + bar; // Tiles 100-107 for bars 0-7
+            OAM[sprite_count].attr2 = ATTR2_PALETTE(bar_palette) | bar_tile;
+            
+            // DEBUG: Store first sprite's position for each bar
+            if (sprite == 0) { // First sprite of each bar
+                if (bar == 0) { SPRITE_PALETTE[16] = bar_x; SPRITE_PALETTE[17] = sprite_y; }
+                if (bar == 1) { SPRITE_PALETTE[18] = bar_x; SPRITE_PALETTE[19] = sprite_y; }
+            }
+            
+            sprite_count++;
         }
     }
     
-    // Disable unused sprites
-    while(sprite_index < 128) {
-        OAM[sprite_index].attr0 = ATTR0_DISABLED;
-        sprite_index++;
-    }
+    // DEBUG: Store total sprite count and bar count in palette
+    SPRITE_PALETTE[28] = sprite_count;
+    SPRITE_PALETTE[24] = NUM_BARS; // Should be 8
 }
