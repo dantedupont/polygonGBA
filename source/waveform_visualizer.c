@@ -17,11 +17,13 @@ static bool need_clear = true;
 static int wave_phase = 0; // For animating the wave
 static int current_amplitude = 10; // Current wave amplitude based on audio level
 static int last_track_waveform = -1; // Track last known track for palette switching
+static bool last_color_mode_waveform = false; // Track last known color mode state
 static int color_offset = 0; // Pre-computed color offset for performance
+static bool is_rainbow_mode_cached = false; // Cached color mode state for performance
 
-// Update waveform palette based on current track
+// Update waveform palette based on current track or easter egg
 static void update_waveform_palette(void) {
-    if (is_final_track_8ad()) {
+    if (is_color_mode_active()) {
         // "The Fourth Color" - set up rainbow palettes for multicolor waveform
         u16 rainbow_colors[7] = {
             RGB5(31, 0, 0),   // Red
@@ -64,6 +66,7 @@ void init_waveform_visualizer(void) {
     need_clear = true; // Always clear when switching to waveform mode
     wave_phase = 0;
     current_amplitude = 10;
+    is_rainbow_mode_cached = is_color_mode_active(); // Initialize cached state
     
     // Don't clear the framebuffer in init - let each mode handle its own background
     
@@ -131,11 +134,15 @@ void cleanup_waveform_visualizer(void) {
 void update_waveform_visualizer(void) {
     if (!is_initialized) return;
     
-    // Check if track has changed and update palette accordingly
+    // Check if track or color mode has changed and update palette accordingly
     int current_track = get_current_track_8ad();
-    if (current_track != last_track_waveform) {
+    bool current_color_mode = is_color_mode_active();
+    
+    if (current_track != last_track_waveform || current_color_mode != last_color_mode_waveform) {
         update_waveform_palette();
+        is_rainbow_mode_cached = current_color_mode; // Cache the color mode state for performance
         last_track_waveform = current_track;
+        last_color_mode_waveform = current_color_mode;
     }
     
     // PERFORMANCE: Reduced debug overhead
@@ -237,13 +244,7 @@ void render_waveform(void) {
     // MODE_1: Use pre-created tile from init function  
     int waveform_tile = 120; // Our waveform tile from init (moved to avoid spectrum conflict)
     
-    // DEBUG: Store tile info for debugging
-    SPRITE_PALETTE[24] = waveform_tile; // Store which tile we're using (120)
-    u32* spriteGfx = (u32*)0x6010000; // MODE_1 sprite memory
-    SPRITE_PALETTE[25] = (spriteGfx[waveform_tile * 8] & 0xFFFF); // Store tile data check
-    
-    // DEBUG: Store current visualization mode for debugging
-    SPRITE_PALETTE[26] = get_current_visualization(); // Should be 1 (VIZ_WAVEFORM) when in waveform
+    // PERFORMANCE: Remove debug palette writes - they cause memory writes every frame
     
     // PERFORMANCE FIX: Restored better update rate now that per-sprite function calls are eliminated  
     render_frame_counter++;
@@ -253,18 +254,49 @@ void render_waveform(void) {
     // Restore smoother wave animation
     wave_phase += 3; // Restored original animation speed
     
-    // PERFORMANCE: Pre-compute both track state AND color offset to eliminate per-sprite function calls
-    static int is_rainbow_mode = 0; // Cache the track state
-    is_rainbow_mode = is_final_track_8ad(); // Only call once per frame, not per sprite!
-    
-    if (is_rainbow_mode) {
-        color_offset = (wave_phase >> 5) & 7; // Faster color shift (divide by 32) - we have CPU headroom now!
+    // PERFORMANCE: Use cached color mode state - no function calls in render loop!
+    if (is_rainbow_mode_cached) {
+        color_offset = (wave_phase >> 5) & 7; // Faster color shift (divide by 32)
     }
     
     int sprite_count = 0;
     
-    // Restored good sprite density now that we eliminated the per-sprite function calls
-    for (int x = 0; x < WAVEFORM_WIDTH; x += 8) { // Back to 8 pixels for smooth curves
+    // PERFORMANCE: Pre-calculate constants and use simpler wave generation
+    int start_x = (240 - WAVEFORM_WIDTH) / 2;
+    int center_y = 60;
+    
+    // PERFORMANCE: Pre-calculate all color palettes to eliminate per-sprite calculations
+    int gb_palette = 8; // Game Boy mode palette (constant)
+    static int rainbow_palettes[30]; // Pre-calculated rainbow palette sequence
+    static bool palettes_initialized = false;
+    static int last_color_offset = -1; // Track when color offset changes
+    
+    // PERFORMANCE: Replace expensive modulo with lookup table
+    static const int modulo_7_table[64] = {
+        0,1,2,3,4,5,6,0,1,2,3,4,5,6,0,1,2,3,4,5,6,0,1,2,3,4,5,6,0,1,2,3,
+        4,5,6,0,1,2,3,4,5,6,0,1,2,3,4,5,6,0,1,2,3,4,5,6,0,1,2,3,4,5,6,0
+    };
+    
+    if (is_rainbow_mode_cached) {
+        // Check if we need to recalculate palettes - but only every 4 frames to reduce CPU spikes
+        int reduced_color_offset = color_offset >> 2; // Update 4x less frequently
+        if (!palettes_initialized || reduced_color_offset != last_color_offset) {
+            // Update rainbow palette sequence when colors shift
+            for (int i = 0; i < 30; i++) {
+                int lookup_index = (i + reduced_color_offset) & 63; // Mask instead of modulo
+                int color_index = modulo_7_table[lookup_index]; // Use lookup table
+                rainbow_palettes[i] = 8 + color_index;
+            }
+            palettes_initialized = true;
+            last_color_offset = reduced_color_offset;
+        }
+    } else {
+        palettes_initialized = false; // Reset for next rainbow mode
+        last_color_offset = -1;
+    }
+    
+    // Restore smooth quadratic curves but keep performance optimizations
+    for (int x = 0; x < WAVEFORM_WIDTH; x += 8) {
         // Higher frequency flowing sine wave with gentle rounded crests
         int phase = ((x * 2) + wave_phase) & 127; // Double frequency: x*2 makes wave twice as frequent
         
@@ -294,29 +326,23 @@ void render_waveform(void) {
             sine_value = -(current_amplitude - ((t * t * current_amplitude) >> 10));
         }
         
-        int start_x = (240 - WAVEFORM_WIDTH) / 2;
-        int center_y = 60; // More centered vertically (screen is 160px, info area is bottom 25px)
-        
         int wave_x = start_x + x;
         int wave_y = center_y + sine_value;
         
         // Create smaller 8x8 sprite
         if (wave_x >= 0 && wave_x < 240 && wave_y >= 0 && wave_y < 160 && sprite_count < 120) {
-            // Choose palette based on cached track state (no function calls in sprite loop!)
+            // PERFORMANCE: Use pre-calculated palettes
             int waveform_palette;
-            if (is_rainbow_mode) {
-                // Rainbow mode - use lookup table to eliminate modulo completely
-                static const int color_map[8] = {0, 1, 2, 3, 4, 5, 6, 0}; // Map 0-7 to 0-6,0 (avoid modulo)
-                int simple_color = ((x >> 3) + color_offset) & 7; // Bit operations only
-                waveform_palette = 8 + color_map[simple_color]; // Use lookup table instead of modulo
+            if (is_rainbow_mode_cached) {
+                int palette_index = (x >> 3) % 30; // Simple modulo with pre-calculated array
+                waveform_palette = rainbow_palettes[palette_index];
             } else {
-                // Game Boy mode - use palette 8 (no calculations needed!)
-                waveform_palette = 8;
+                waveform_palette = gb_palette; // Constant - no calculations
             }
             
             OAM[sprite_count].attr0 = ATTR0_NORMAL | ATTR0_COLOR_16 | ATTR0_SQUARE | (wave_y & 0xFF);
-            OAM[sprite_count].attr1 = ATTR1_SIZE_8 | (wave_x & 0x01FF); // 8x8 sprites instead of 32x8
-            OAM[sprite_count].attr2 = ATTR2_PALETTE(waveform_palette) | waveform_tile; // Use appropriate palette
+            OAM[sprite_count].attr1 = ATTR1_SIZE_8 | (wave_x & 0x01FF);
+            OAM[sprite_count].attr2 = ATTR2_PALETTE(waveform_palette) | waveform_tile;
             sprite_count++;
         }
     }
@@ -326,7 +352,5 @@ void render_waveform(void) {
         OAM[i].attr0 = ATTR0_DISABLED;
     }
     
-    // DEBUG: Store essential debug info only
-    SPRITE_PALETTE[16] = sprite_count;        // Number of sprites created
-    SPRITE_PALETTE[19] = current_amplitude;   // Current amplitude value
+    // PERFORMANCE: Remove debug writes for clean audio
 }

@@ -17,6 +17,14 @@
 const GBFS_FILE *fs = NULL;
 
 
+// Global color mode state for easter egg
+static bool global_color_mode_unlocked = false;
+
+// Function for visualizers to check if color mode is active
+bool is_color_mode_active(void) {
+    return global_color_mode_unlocked || is_final_track_8ad();
+}
+
 // Full track name mapping
 const char* get_full_track_name(int track_index) {
     // Map track indices to full names
@@ -122,7 +130,7 @@ int main() {
     // Set up Game Boy green background color palette
     // Game Boy green (#9bbc0f = 155,188,15 RGB) converted to RGB5
     BG_PALETTE[0] = RGB5(0, 0, 0);    // Black (unused)
-    BG_PALETTE[1] = RGB5(19, 23, 1);  // Game Boy bright green for tile 1
+    BG_PALETTE[1] = RGB5(25, 31, 8);  // Brighter lime green optimized for GBA LCD
     
     // Also ensure the font text color is set correctly
     BG_PALETTE[17] = RGB5(1, 7, 1);    // Game Boy darkest green text
@@ -191,11 +199,16 @@ int main() {
     update_album_cover_colors();
     
     // FINAL OVERRIDE: Force the background tile color after ALL initialization
-    BG_PALETTE[1] = RGB5(19, 23, 1);  // Game Boy bright green for tile 1
+    BG_PALETTE[1] = RGB5(25, 31, 8);  // Brighter lime green optimized for GBA LCD
     
     // Font system already initialized above
     
     unsigned short last_keys = 0;
+    
+    // Easter egg: Konami code-style sequence detector for color mode
+    // Sequence: L+R-R-L-R to activate color mode (L+R means both pressed simultaneously)
+    static unsigned short sequence[4] = {KEY_L | KEY_R, KEY_R, KEY_L, KEY_R};
+    static int sequence_pos = 0;
     
     // Visualization mode variables removed - handled by visualization_manager
     
@@ -227,14 +240,46 @@ int main() {
             toggle_pause_8ad();
         }
         
+        // Easter egg: Check for L+R-R-L-R sequence
+        if (pressed & (KEY_L | KEY_R)) {
+            // Check if the current pressed keys match the expected sequence step
+            if ((pressed & sequence[sequence_pos]) == sequence[sequence_pos]) {
+                sequence_pos++;
+                if (sequence_pos >= 4) {
+                    // Sequence complete! Toggle color mode
+                    global_color_mode_unlocked = !global_color_mode_unlocked;
+                    sequence_pos = 0;
+                    // Visual feedback could be added here (screen flash, sound, etc.)
+                }
+            } else {
+                // Wrong key, reset sequence
+                sequence_pos = 0;
+                // Check if this press starts the sequence correctly (L+R simultaneously)
+                if ((pressed & sequence[0]) == sequence[0]) {
+                    sequence_pos = 1;
+                }
+            }
+        }
+        
         // Handle visualization switching (UP/DOWN)
         handle_visualization_controls(pressed);
         
-        // CRITICAL: Set background color based on current track
-        if (is_final_track_8ad()) {
-            BG_PALETTE[1] = RGB5(31, 31, 31);  // White background for "The Fourth Colour"
+        // CRITICAL: Set background color based on easter egg state or final track
+        // Cache the color mode state to avoid expensive function calls every frame
+        static bool cached_color_mode = false;
+        static int color_mode_check_counter = 0;
+        
+        // Only check color mode every 30 frames (twice per second) to reduce CPU load
+        color_mode_check_counter++;
+        if (color_mode_check_counter >= 30) {
+            cached_color_mode = is_color_mode_active();
+            color_mode_check_counter = 0;
+        }
+        
+        if (cached_color_mode) {
+            BG_PALETTE[1] = RGB5(31, 31, 31);  // White background for color mode
         } else {
-            BG_PALETTE[1] = RGB5(19, 23, 1);   // Game Boy bright green for all other tracks
+            BG_PALETTE[1] = RGB5(25, 31, 8);   // Brighter lime green for Game Boy mode
         }
         
         // Update visualization data for next frame
@@ -243,16 +288,25 @@ int main() {
         // Display track title and visualization info
         static int last_displayed_track = -1;
         static int last_displayed_viz = 0; // VIZ_SPECTRUM_BARS
-        int current_track_num = get_current_track_8ad();
-        int current_viz = get_current_visualization();
+        static int info_update_counter = 0;
+        static int cached_track_num = -1;
+        static int cached_viz = 0;
         
-        if (current_track_num != last_displayed_track || current_viz != last_displayed_viz) {
-            last_displayed_track = current_track_num;
-            last_displayed_viz = current_viz;
+        // Only update track/viz info every 15 frames to reduce CPU load
+        info_update_counter++;
+        if (info_update_counter >= 15) {
+            cached_track_num = get_current_track_8ad();
+            cached_viz = get_current_visualization();
+            info_update_counter = 0;
+        }
+        
+        if (cached_track_num != last_displayed_track || cached_viz != last_displayed_viz) {
+            last_displayed_track = cached_track_num;
+            last_displayed_viz = cached_viz;
             
             // MODE_1: Use existing tile-based text system on BG1
-            const char* track_name = get_full_track_name(current_track_num);
-            const char* viz_name = get_visualization_name(current_viz);
+            const char* track_name = get_full_track_name(cached_track_num);
+            const char* viz_name = get_visualization_name(cached_viz);
             
             // EXPERIMENT: Now that floating zeros are fixed, try enabling text in all modes
             // to see if album cover's init sequence was the missing piece
