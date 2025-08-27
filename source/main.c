@@ -1,4 +1,5 @@
 #include <gba.h>
+#include <gba_dma.h>
 #include <stdio.h>
 #include <string.h>
 #include "gbfs.h"
@@ -7,6 +8,8 @@
 #include "visualization_manager.h"
 #include "spectrum_visualizer.h"
 #include "waveform_visualizer.h"
+#include "polygondwanaland_128.h"
+#include "album_cover.h"
 
 #include "font.h"
 
@@ -63,10 +66,16 @@ int main() {
     
     // MODE_1: Use unified video mode for all visualizations
     // This eliminates mode switching corruption artifacts
-    SetMode(MODE_1 | BG0_ENABLE | BG2_ENABLE | OBJ_ENABLE | OBJ_1D_MAP);
+    SetMode(MODE_1 | BG0_ENABLE | BG1_ENABLE | BG2_ENABLE | OBJ_ENABLE | OBJ_1D_MAP);
     
-    // Initialize font system for text rendering
-    init_font_tiles();
+    // Wait for any pending DMA operations like album cover does
+    while (REG_DMA3CNT & DMA_ENABLE) VBlankIntrWait();
+    
+    // Clear character base 0 completely to remove any garbage data
+    u16* char_base_0 = (u16*)CHAR_BASE_ADR(0);
+    for (int i = 0; i < 2048; i++) { // Clear 4KB of character data (96 tiles * 32 bytes / 2)
+        char_base_0[i] = 0x0000;
+    }
     
     // Configure BG1 for text overlay (uses existing font system)
     REG_BG1CNT = BG_SIZE_0 | BG_16_COLOR | BG_PRIORITY(0) | CHAR_BASE(0) | SCREEN_BASE(30);
@@ -76,10 +85,7 @@ int main() {
     // Configure BG2 for solid background
     REG_BG2CNT = BG_SIZE_0 | BG_256_COLOR | CHAR_BASE(1) | SCREEN_BASE(29);
     
-    // Enable BG1 instead of BG0
-    SetMode(MODE_1 | BG1_ENABLE | BG2_ENABLE | OBJ_ENABLE | OBJ_1D_MAP);
-    
-    // Clear BG1 tilemap (text layer)
+    // Clear BG1 tilemap (text layer) BEFORE enabling it
     u16* textMap = (u16*)SCREEN_BASE_BLOCK(30);
     for (int i = 0; i < 1024; i++) {
         textMap[i] = 0;
@@ -97,10 +103,22 @@ int main() {
         tileMem[64 + i] = 0; // Tile 1 (offset 64), all pixels black
     }
     
-    // Set BG palette colors for text and background
-    BG_PALETTE[0] = RGB5(0, 0, 0);        // Color 0: Black (background/transparent)
-    BG_PALETTE[16] = RGB5(0, 0, 0);       // Palette 1, Color 0: Transparent
-    BG_PALETTE[17] = RGB5(31, 31, 0);     // Palette 1, Color 1: Yellow (text)
+    // EXPERIMENT: Load the complete album palette to see if that activates font system
+    // This replicates exactly what album cover does for palette initialization
+    for (int i = 0; i < 256; i++) {
+        u16 originalColor = polygondwanaland_128Pal[i];
+        u16 r = (originalColor & 0x1F);           // Extract R
+        u16 g = (originalColor >> 5) & 0x1F;     // Extract G  
+        u16 b = (originalColor >> 10) & 0x1F;    // Extract B
+        
+        // Swap R and B channels to fix the color mapping (same as album cover)
+        BG_PALETTE[i] = b | (g << 5) | (r << 10);  // B, G, R instead of R, G, B
+    }
+    
+    // CRITICAL: Font system needs palette 1 (entries 16-17) for text rendering
+    // Set up font palette after loading album colors
+    BG_PALETTE[16] = RGB5(0, 0, 0);      // Color 0 of palette 1: transparent/black
+    BG_PALETTE[17] = RGB5(31, 31, 0);    // Color 1 of palette 1: yellow text
     
     // CRITICAL: Initialize ALL OAM entries to disabled state first
     // This prevents sprite artifacts from previous sessions or undefined memory
@@ -112,6 +130,20 @@ int main() {
     
     // Initialize visualization manager
     init_visualization_manager();
+    
+    // CRITICAL: Initialize font system AFTER visualization system
+    // This ensures font tiles don't get corrupted by other graphics initialization
+    init_font_tiles();
+    
+    // EXPERIMENT: Test if album cover initialization sequence enables font system
+    // Initialize album cover briefly, then clean it up - testing if the init sequence
+    // itself (not the ongoing display) is what permanently fixes font rendering
+    init_album_cover();
+    cleanup_album_cover();
+    
+    // CRITICAL: Reinitialize the visualization manager to correct mode after album cover test
+    // The direct init_album_cover() call may have corrupted the manager's state
+    init_spectrum_visualizer();
     
     
     // Initialize GBFS
@@ -184,6 +216,8 @@ int main() {
             const char* track_name = get_full_track_name(current_track_num);
             const char* viz_name = get_visualization_name(current_viz);
             
+            // EXPERIMENT: Now that floating zeros are fixed, try enabling text in all modes
+            // to see if album cover's init sequence was the missing piece
             draw_text_tiles(1, 17, track_name);  // Row 17 (near bottom)
             draw_text_tiles(1, 18, viz_name);    // Row 18
             
