@@ -17,6 +17,7 @@ void audio_vblank_8ad(void);
 // Status
 int get_current_track_8ad(void);
 int is_playing_8ad(void);
+int is_final_track_8ad(void); // Check if on "The Fourth Color" (Side B, last track)
 
 // Real frequency analysis for visualizer
 extern long spectrum_accumulators_8ad[8];

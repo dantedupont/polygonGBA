@@ -16,6 +16,37 @@ static bool need_clear = true;
 // Wave animation state
 static int wave_phase = 0; // For animating the wave
 static int current_amplitude = 10; // Current wave amplitude based on audio level
+static int last_track_waveform = -1; // Track last known track for palette switching
+static int color_offset = 0; // Pre-computed color offset for performance
+
+// Update waveform palette based on current track
+static void update_waveform_palette(void) {
+    if (is_final_track_8ad()) {
+        // "The Fourth Color" - set up rainbow palettes for multicolor waveform
+        u16 rainbow_colors[7] = {
+            RGB5(31, 0, 0),   // Red
+            RGB5(31, 15, 0),  // Orange  
+            RGB5(31, 31, 0),  // Yellow
+            RGB5(0, 31, 0),   // Green
+            RGB5(0, 0, 31),   // Blue
+            RGB5(15, 0, 31),  // Indigo
+            RGB5(31, 0, 31)   // Violet
+        };
+        
+        // Set up palettes 8-14 for rainbow waveform (7 colors)
+        for (int pal = 0; pal < 7; pal++) {
+            SPRITE_PALETTE[(8 + pal) * 16 + 0] = RGB5(0, 0, 0);  // Transparent
+            SPRITE_PALETTE[(8 + pal) * 16 + 1] = rainbow_colors[pal];
+        }
+    } else {
+        // All other tracks - Game Boy green
+        SPRITE_PALETTE[8 * 16 + 0] = RGB5(0, 0, 0);      // Transparent
+        SPRITE_PALETTE[8 * 16 + 1] = RGB5(6, 12, 6);     // Game Boy dark green for waveform circles
+        SPRITE_PALETTE[8 * 16 + 2] = RGB5(31, 31, 31);   // BRIGHT WHITE  
+        SPRITE_PALETTE[8 * 16 + 3] = RGB5(31, 0, 31);    // BRIGHT MAGENTA
+        SPRITE_PALETTE[8 * 16 + 4] = RGB5(31, 31, 0);    // BRIGHT YELLOW
+    }
+}
 
 void init_waveform_visualizer(void) {
     if (is_initialized) return;
@@ -36,12 +67,8 @@ void init_waveform_visualizer(void) {
     
     // Don't clear the framebuffer in init - let each mode handle its own background
     
-    // Set up palette 8 for waveform (avoid conflict with spectrum palettes 0-7)
-    SPRITE_PALETTE[8 * 16 + 0] = RGB5(0, 0, 0);      // Transparent
-    SPRITE_PALETTE[8 * 16 + 1] = RGB5(0, 31, 0);     // BRIGHT GREEN for waveform circles
-    SPRITE_PALETTE[8 * 16 + 2] = RGB5(31, 31, 31);   // BRIGHT WHITE  
-    SPRITE_PALETTE[8 * 16 + 3] = RGB5(31, 0, 31);    // BRIGHT MAGENTA
-    SPRITE_PALETTE[8 * 16 + 4] = RGB5(31, 31, 0);    // BRIGHT YELLOW
+    // Initialize waveform palettes - will be updated based on current track
+    update_waveform_palette();
     
     // MODE_1: Create waveform sprite tile at index 120 (after spectrum tiles 100-115)
     u32* spriteGfx = (u32*)0x6010000; // MODE_1 standard sprite memory
@@ -103,6 +130,13 @@ void cleanup_waveform_visualizer(void) {
 
 void update_waveform_visualizer(void) {
     if (!is_initialized) return;
+    
+    // Check if track has changed and update palette accordingly
+    int current_track = get_current_track_8ad();
+    if (current_track != last_track_waveform) {
+        update_waveform_palette();
+        last_track_waveform = current_track;
+    }
     
     // PERFORMANCE: Reduced debug overhead
     
@@ -211,18 +245,26 @@ void render_waveform(void) {
     // DEBUG: Store current visualization mode for debugging
     SPRITE_PALETTE[26] = get_current_visualization(); // Should be 1 (VIZ_WAVEFORM) when in waveform
     
-    // PERFORMANCE FIX: Update sprites less frequently  
+    // PERFORMANCE FIX: Restored better update rate now that per-sprite function calls are eliminated  
     render_frame_counter++;
-    if (render_frame_counter < 2) return; // Only update sprites every 2 frames for better performance
+    if (render_frame_counter < 2) return; // Back to every 2 frames since we fixed the real performance issue
     render_frame_counter = 0;
     
-    // Animate wave phase for flowing effect with smooth motion
-    wave_phase += 3; // Faster flow for more dynamic wave motion
+    // Restore smoother wave animation
+    wave_phase += 3; // Restored original animation speed
+    
+    // PERFORMANCE: Pre-compute both track state AND color offset to eliminate per-sprite function calls
+    static int is_rainbow_mode = 0; // Cache the track state
+    is_rainbow_mode = is_final_track_8ad(); // Only call once per frame, not per sprite!
+    
+    if (is_rainbow_mode) {
+        color_offset = (wave_phase >> 5) & 7; // Faster color shift (divide by 32) - we have CPU headroom now!
+    }
     
     int sprite_count = 0;
     
-    // Denser sprite spacing for smoother quadratic curves
-    for (int x = 0; x < WAVEFORM_WIDTH; x += 8) { // Every 8 pixels for smoother curve visualization
+    // Restored good sprite density now that we eliminated the per-sprite function calls
+    for (int x = 0; x < WAVEFORM_WIDTH; x += 8) { // Back to 8 pixels for smooth curves
         // Higher frequency flowing sine wave with gentle rounded crests
         int phase = ((x * 2) + wave_phase) & 127; // Double frequency: x*2 makes wave twice as frequent
         
@@ -260,9 +302,21 @@ void render_waveform(void) {
         
         // Create smaller 8x8 sprite
         if (wave_x >= 0 && wave_x < 240 && wave_y >= 0 && wave_y < 160 && sprite_count < 120) {
+            // Choose palette based on cached track state (no function calls in sprite loop!)
+            int waveform_palette;
+            if (is_rainbow_mode) {
+                // Rainbow mode - use lookup table to eliminate modulo completely
+                static const int color_map[8] = {0, 1, 2, 3, 4, 5, 6, 0}; // Map 0-7 to 0-6,0 (avoid modulo)
+                int simple_color = ((x >> 3) + color_offset) & 7; // Bit operations only
+                waveform_palette = 8 + color_map[simple_color]; // Use lookup table instead of modulo
+            } else {
+                // Game Boy mode - use palette 8 (no calculations needed!)
+                waveform_palette = 8;
+            }
+            
             OAM[sprite_count].attr0 = ATTR0_NORMAL | ATTR0_COLOR_16 | ATTR0_SQUARE | (wave_y & 0xFF);
             OAM[sprite_count].attr1 = ATTR1_SIZE_8 | (wave_x & 0x01FF); // 8x8 sprites instead of 32x8
-            OAM[sprite_count].attr2 = ATTR2_PALETTE(8) | waveform_tile; // Use palette 8 with green color
+            OAM[sprite_count].attr2 = ATTR2_PALETTE(waveform_palette) | waveform_tile; // Use appropriate palette
             sprite_count++;
         }
     }

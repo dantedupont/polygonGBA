@@ -24,7 +24,7 @@ void init_album_cover(void) {
     // 1. Load palette with RGB channel fix
     while (REG_DMA3CNT & DMA_ENABLE) VBlankIntrWait();
     
-    // Load palette from 128x128 image data
+    // Load the complete original album palette first
     for (int i = 0; i < 256; i++) {
         u16 originalColor = polygondwanaland_128Pal[i];
         u16 r = (originalColor & 0x1F);           // Extract R
@@ -35,14 +35,27 @@ void init_album_cover(void) {
         BG_PALETTE[i] = b | (g << 5) | (r << 10);  // B, G, R instead of R, G, B
     }
     
-    // CRITICAL: Restore font palette after loading album colors
-    // Album palette overwrites font colors, so we need to restore them
-    BG_PALETTE[16] = RGB5(0, 0, 0);      // Color 0 of palette 1: transparent/black
-    BG_PALETTE[17] = RGB5(31, 31, 0);    // Color 1 of palette 1: yellow text
+    // Dynamic background and text colors based on current track
+    // Import track detection function
+    extern int is_final_track_8ad(void);
     
-    // 2. Load tile data to character base 2
+    if (is_final_track_8ad()) {
+        // "The Fourth Color" - white background, black text
+        BG_PALETTE[0] = RGB5(31, 31, 31);  // White background
+        BG_PALETTE[16] = RGB5(0, 0, 0);    // Color 0 of palette 1: transparent/black  
+        BG_PALETTE[17] = RGB5(0, 0, 0);    // Color 1 of palette 1: black text
+    } else {
+        // All other tracks - Game Boy colors
+        BG_PALETTE[0] = RGB5(19, 23, 1);   // Game Boy bright green background
+        BG_PALETTE[16] = RGB5(0, 0, 0);    // Color 0 of palette 1: transparent/black
+        BG_PALETTE[17] = RGB5(1, 7, 1);    // Color 1 of palette 1: darkest Game Boy green text
+    }
+    
+    // 2. Load tile data to character base 2 FIRST
     while (REG_DMA3CNT & DMA_ENABLE) VBlankIntrWait();
     dmaCopy(polygondwanaland_128Tiles, PATRAM8(2, 0), polygondwanaland_128TilesLen);
+    
+    // No pixel manipulation needed - grit should handle palette reservation
     
     // 3. Set up screen entries at our allocated screen base
     u16* screenEntries = SCREEN_BASE_BLOCK(28);
@@ -79,6 +92,23 @@ void cleanup_album_cover(void) {
     REG_BG0CNT = SCREEN_BASE(28) | CHAR_BASE(2) | BG_PRIORITY(3) | BG_256_COLOR | BG_SIZE_0;
     
     is_initialized = 0;
+}
+
+void update_album_cover_colors(void) {
+    // Import track detection function
+    extern int is_final_track_8ad(void);
+    
+    if (is_final_track_8ad()) {
+        // "The Fourth Color" - white background, black text
+        BG_PALETTE[0] = RGB5(31, 31, 31);  // White background
+        BG_PALETTE[16] = RGB5(0, 0, 0);    // Color 0 of palette 1: transparent/black  
+        BG_PALETTE[17] = RGB5(0, 0, 0);    // Color 1 of palette 1: black text
+    } else {
+        // All other tracks - Game Boy colors
+        BG_PALETTE[0] = RGB5(19, 23, 1);   // Game Boy bright green background
+        BG_PALETTE[16] = RGB5(0, 0, 0);    // Color 0 of palette 1: transparent/black
+        BG_PALETTE[17] = RGB5(1, 7, 1);    // Color 1 of palette 1: darkest Game Boy green text
+    }
 }
 
 // No update or render functions needed - the background displays automatically once initialized

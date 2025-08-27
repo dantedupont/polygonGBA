@@ -91,21 +91,25 @@ int main() {
         textMap[i] = 0;
     }
     
-    // Set up solid black background using BG2
+    // Set up solid Game Boy green background using BG2
     u16* bgMap = (u16*)SCREEN_BASE_BLOCK(29);
     for (int i = 0; i < 1024; i++) {
-        bgMap[i] = 1; // Use tile 1 (black tile)
+        bgMap[i] = 1; // Use tile 1 (background tile)
     }
     
-    // Create a simple black tile at index 1 in character base 1
+    // Create a simple background tile at index 1 in character base 1
     u8* tileMem = (u8*)0x6004000; // Character base 1
     for (int i = 0; i < 64; i++) { // 8x8 tile in 256-color mode = 64 bytes
-        tileMem[64 + i] = 0; // Tile 1 (offset 64), all pixels black
+        tileMem[64 + i] = 0; // Tile 1 (offset 64), all pixels use color 0 (background)
     }
+    
+    // Set up Game Boy green background color palette
+    // Game Boy green (#9bbc0f = 155,188,15 RGB) converted to RGB5
+    BG_PALETTE[0] = RGB5(19, 23, 1);  // Game Boy bright green background
     
     // EXPERIMENT: Load the complete album palette to see if that activates font system
     // This replicates exactly what album cover does for palette initialization
-    for (int i = 0; i < 256; i++) {
+    for (int i = 1; i < 256; i++) { // Start from 1 to preserve our Game Boy background
         u16 originalColor = polygondwanaland_128Pal[i];
         u16 r = (originalColor & 0x1F);           // Extract R
         u16 g = (originalColor >> 5) & 0x1F;     // Extract G  
@@ -116,9 +120,9 @@ int main() {
     }
     
     // CRITICAL: Font system needs palette 1 (entries 16-17) for text rendering
-    // Set up font palette after loading album colors
+    // Set up font palette after loading album colors - Game Boy colors
     BG_PALETTE[16] = RGB5(0, 0, 0);      // Color 0 of palette 1: transparent/black
-    BG_PALETTE[17] = RGB5(31, 31, 0);    // Color 1 of palette 1: yellow text
+    BG_PALETTE[17] = RGB5(1, 7, 1);      // Color 1 of palette 1: darkest Game Boy green text
     
     // CRITICAL: Initialize ALL OAM entries to disabled state first
     // This prevents sprite artifacts from previous sessions or undefined memory
