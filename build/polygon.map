@@ -740,7 +740,7 @@ Linker script and memory map
  *(.plt)
                 0x0800021c                        . = ALIGN (0x4)
 
-.text           0x08000220     0xb5c0
+.text           0x08000220     0xb6c8
  *(EXCLUDE_FILE(*.iwram*) .text*)
  .text.__do_global_dtors_aux
                 0x08000220       0x2c /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/thumb/crtbegin.o
@@ -779,476 +779,476 @@ Linker script and memory map
                 0x08000e20                gbfs_get_nth_obj
                 0x08000e64                gbfs_copy_obj
                 0x08000eac                gbfs_count_objs
- .text          0x08000eb4       0x58 main.o
-                0x08000eb4                get_full_track_name
- .text.startup  0x08000f0c      0x250 main.o
-                0x08000f0c                main
- .text          0x0800115c      0x830 spectrum_visualizer.o
-                0x08001220                init_spectrum_visualizer
-                0x08001280                reset_spectrum_visualizer_state
-                0x080012c0                cleanup_spectrum_visualizer
-                0x0800131c                update_spectrum_visualizer
-                0x080017bc                render_spectrum_bars
- .text          0x0800198c      0x164 visualization_manager.o
-                0x0800198c                init_visualization_manager
-                0x080019ac                switch_visualization
-                0x08001a28                get_current_visualization
-                0x08001a34                get_visualization_name
-                0x08001a4c                update_current_visualization
-                0x08001a74                render_current_visualization
-                0x08001aa4                handle_visualization_controls
- .text          0x08001af0      0x454 waveform_visualizer.o
-                0x08001b74                init_waveform_visualizer
-                0x08001bf0                cleanup_waveform_visualizer
-                0x08001c28                update_waveform_visualizer
-                0x08001dcc                render_waveform
- .text          0x08001f44      0x3c4 /opt/devkitpro/libgba/lib/libgba.a(interrupt.o)
-                0x08001f44                dummy
-                0x08001f48                InitInterrupt
-                0x08001fa4                irqInit
-                0x08002000                SetInterrupt
-                0x080020e8                irqSet
-                0x080021d0                EnableInterrupt
-                0x0800221c                irqEnable
-                0x08002270                DisableInterrupt
-                0x080022bc                irqDisable
- .text          0x08002308      0x150 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/thumb/libgcc.a(_divsi3.o)
-                0x08002308                __aeabi_idiv
-                0x08002308                __divsi3
-                0x08002438                __aeabi_idivmod
- .text          0x08002458        0x4 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/thumb/libgcc.a(_dvmd_tls.o)
-                0x08002458                __aeabi_ldiv0
-                0x08002458                __aeabi_idiv0
- .text.sprintf  0x0800245c       0x44 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-sprintf.o)
-                0x0800245c                sprintf
- .text.memcmp   0x080024a0       0x48 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-memcmp.o)
-                0x080024a0                memcmp
+ .text          0x08000eb4       0x78 main.o
+                0x08000eb4                is_color_mode_active
+                0x08000ed4                get_full_track_name
+ .text.startup  0x08000f2c      0x2dc main.o
+                0x08000f2c                main
+ .text          0x08001208      0x874 spectrum_visualizer.o
+                0x080012cc                init_spectrum_visualizer
+                0x0800132c                reset_spectrum_visualizer_state
+                0x0800136c                cleanup_spectrum_visualizer
+                0x080013c8                update_spectrum_visualizer
+                0x08001894                render_spectrum_bars
+ .text          0x08001a7c      0x164 visualization_manager.o
+                0x08001a7c                init_visualization_manager
+                0x08001a9c                switch_visualization
+                0x08001b18                get_current_visualization
+                0x08001b24                get_visualization_name
+                0x08001b3c                update_current_visualization
+                0x08001b64                render_current_visualization
+                0x08001b94                handle_visualization_controls
+ .text          0x08001be0      0x470 waveform_visualizer.o
+                0x08001c64                init_waveform_visualizer
+                0x08001ce8                cleanup_waveform_visualizer
+                0x08001d20                update_waveform_visualizer
+                0x08001ed4                render_waveform
+ .text          0x08002050      0x3c4 /opt/devkitpro/libgba/lib/libgba.a(interrupt.o)
+                0x08002050                dummy
+                0x08002054                InitInterrupt
+                0x080020b0                irqInit
+                0x0800210c                SetInterrupt
+                0x080021f4                irqSet
+                0x080022dc                EnableInterrupt
+                0x08002328                irqEnable
+                0x0800237c                DisableInterrupt
+                0x080023c8                irqDisable
+ .text          0x08002414      0x150 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/thumb/libgcc.a(_divsi3.o)
+                0x08002414                __aeabi_idiv
+                0x08002414                __divsi3
+                0x08002544                __aeabi_idivmod
+ .text          0x08002564        0x4 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/thumb/libgcc.a(_dvmd_tls.o)
+                0x08002564                __aeabi_ldiv0
+                0x08002564                __aeabi_idiv0
+ .text.sprintf  0x08002568       0x44 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-sprintf.o)
+                0x08002568                sprintf
+ .text.memcmp   0x080025ac       0x48 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-memcmp.o)
+                0x080025ac                memcmp
  .text.__libc_init_array
-                0x080024e8       0x54 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-init.o)
-                0x080024e8                __libc_init_array
- .text.bsearch  0x0800253c       0x58 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-bsearch.o)
-                0x0800253c                bsearch
- .text.get_arg  0x08002594      0x404 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-svfprintf.o)
+                0x080025f4       0x54 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-init.o)
+                0x080025f4                __libc_init_array
+ .text.bsearch  0x08002648       0x58 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-bsearch.o)
+                0x08002648                bsearch
+ .text.get_arg  0x080026a0      0x404 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-svfprintf.o)
  .text._svfprintf_r
-                0x08002998     0x22d8 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-svfprintf.o)
-                0x08002998                _svfprintf_r
- .text.memset   0x08004c70       0x8c /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-memset.o)
-                0x08004c70                memset
- .text.strncpy  0x08004cfc       0x68 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-strncpy.o)
-                0x08004cfc                strncpy
- .text.memcpy   0x08004d64       0xb0 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-memcpy-stub.o)
-                0x08004d64                memcpy
+                0x08002aa4     0x22d8 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-svfprintf.o)
+                0x08002aa4                _svfprintf_r
+ .text.memset   0x08004d7c       0x8c /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-memset.o)
+                0x08004d7c                memset
+ .text.strncpy  0x08004e08       0x68 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-strncpy.o)
+                0x08004e08                strncpy
+ .text.memcpy   0x08004e70       0xb0 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-memcpy-stub.o)
+                0x08004e70                memcpy
  .text._wcsrtombs_r
-                0x08004e14       0x20 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-wcsrtombs.o)
-                0x08004e14                _wcsrtombs_r
- .text.frexp    0x08004e34       0x74 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libm_a-s_frexp.o)
-                0x08004e34                frexp
+                0x08004f20       0x20 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-wcsrtombs.o)
+                0x08004f20                _wcsrtombs_r
+ .text.frexp    0x08004f40       0x74 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libm_a-s_frexp.o)
+                0x08004f40                frexp
  .text.__locale_mb_cur_max
-                0x08004ea8       0x20 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-locale.o)
-                0x08004ea8                __locale_mb_cur_max
+                0x08004fb4       0x20 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-locale.o)
+                0x08004fb4                __locale_mb_cur_max
  .text.__ssprint_r
-                0x08004ec8       0x60 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-ssprint_r.o)
-                0x08004ec8                __ssprint_r
- .text.strlen   0x08004f28       0x60 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-strlen.o)
-                0x08004f28                strlen
+                0x08004fd4       0x60 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-ssprint_r.o)
+                0x08004fd4                __ssprint_r
+ .text.strlen   0x08005034       0x60 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-strlen.o)
+                0x08005034                strlen
  .text._wcsnrtombs_l
-                0x08004f88      0x11c /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-wcsnrtombs.o)
-                0x08004f88                _wcsnrtombs_l
+                0x08005094      0x11c /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-wcsnrtombs.o)
+                0x08005094                _wcsnrtombs_l
  .text._wcsnrtombs_r
-                0x080050a4       0x40 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-wcsnrtombs.o)
-                0x080050a4                _wcsnrtombs_r
+                0x080051b0       0x40 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-wcsnrtombs.o)
+                0x080051b0                _wcsnrtombs_r
  .text.__utf8_mbtowc
-                0x080050e4      0x24c /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-mbtowc_r.o)
-                0x080050e4                __utf8_mbtowc
+                0x080051f0      0x24c /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-mbtowc_r.o)
+                0x080051f0                __utf8_mbtowc
  .text._localeconv_r
-                0x08005330       0x1c /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-localeconv.o)
-                0x08005330                _localeconv_r
+                0x0800543c       0x1c /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-localeconv.o)
+                0x0800543c                _localeconv_r
  .text._malloc_r
-                0x0800534c      0x550 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-mallocr.o)
-                0x0800534c                _malloc_r
- .text.memchr   0x0800589c       0x74 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-memchr-stub.o)
-                0x0800589c                memchr
- .text.quorem   0x08005910      0x160 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-dtoa.o)
- .text._dtoa_r  0x08005a70     0x10b0 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-dtoa.o)
-                0x08005a70                _dtoa_r
+                0x08005458      0x550 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-mallocr.o)
+                0x08005458                _malloc_r
+ .text.memchr   0x080059a8       0x74 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-memchr-stub.o)
+                0x080059a8                memchr
+ .text.quorem   0x08005a1c      0x160 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-dtoa.o)
+ .text._dtoa_r  0x08005b7c     0x10b0 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-dtoa.o)
+                0x08005b7c                _dtoa_r
  .text._wcrtomb_r
-                0x08006b20       0x84 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-wcrtomb.o)
-                0x08006b20                _wcrtomb_r
+                0x08006c2c       0x84 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-wcrtomb.o)
+                0x08006c2c                _wcrtomb_r
  .text._malloc_trim_r
-                0x08006ba4       0xac /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-freer.o)
-                0x08006ba4                _malloc_trim_r
- .text._free_r  0x08006c50      0x1d8 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-freer.o)
-                0x08006c50                _free_r
+                0x08006cb0       0xac /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-freer.o)
+                0x08006cb0                _malloc_trim_r
+ .text._free_r  0x08006d5c      0x1d8 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-freer.o)
+                0x08006d5c                _free_r
  .text.__ssputs_r
-                0x08006e28       0xd4 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-ssputs_r.o)
-                0x08006e28                __ssputs_r
+                0x08006f34       0xd4 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-ssputs_r.o)
+                0x08006f34                __ssputs_r
  .text.__malloc_lock
-                0x08006efc       0x14 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-mlock.o)
-                0x08006efc                __malloc_lock
+                0x08007008       0x14 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-mlock.o)
+                0x08007008                __malloc_lock
  .text.__malloc_unlock
-                0x08006f10       0x14 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-mlock.o)
-                0x08006f10                __malloc_unlock
+                0x0800701c       0x14 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-mlock.o)
+                0x0800701c                __malloc_unlock
  .text.__utf8_wctomb
-                0x08006f24       0xbc /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-wctomb_r.o)
-                0x08006f24                __utf8_wctomb
- .text.memmove  0x08006fe0       0xcc /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-memmove.o)
-                0x08006fe0                memmove
+                0x08007030       0xbc /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-wctomb_r.o)
+                0x08007030                __utf8_wctomb
+ .text.memmove  0x080070ec       0xcc /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-memmove.o)
+                0x080070ec                memmove
  .text.__assert_func
-                0x080070ac       0x40 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-assert.o)
-                0x080070ac                __assert_func
- .text._Balloc  0x080070ec       0x5c /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-mprec.o)
-                0x080070ec                _Balloc
- .text._Bfree   0x08007148       0x14 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-mprec.o)
-                0x08007148                _Bfree
+                0x080071b8       0x40 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-assert.o)
+                0x080071b8                __assert_func
+ .text._Balloc  0x080071f8       0x5c /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-mprec.o)
+                0x080071f8                _Balloc
+ .text._Bfree   0x08007254       0x14 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-mprec.o)
+                0x08007254                _Bfree
  .text.__multadd
-                0x0800715c       0xa8 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-mprec.o)
-                0x0800715c                __multadd
+                0x08007268       0xa8 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-mprec.o)
+                0x08007268                __multadd
  .text.__hi0bits
-                0x08007204       0x60 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-mprec.o)
-                0x08007204                __hi0bits
+                0x08007310       0x60 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-mprec.o)
+                0x08007310                __hi0bits
  .text.__lo0bits
-                0x08007264       0x8c /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-mprec.o)
-                0x08007264                __lo0bits
- .text.__i2b    0x080072f0       0x64 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-mprec.o)
-                0x080072f0                __i2b
+                0x08007370       0x8c /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-mprec.o)
+                0x08007370                __lo0bits
+ .text.__i2b    0x080073fc       0x64 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-mprec.o)
+                0x080073fc                __i2b
  .text.__multiply
-                0x08007354      0x1b4 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-mprec.o)
-                0x08007354                __multiply
+                0x08007460      0x1b4 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-mprec.o)
+                0x08007460                __multiply
  .text.__pow5mult
-                0x08007508       0xd8 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-mprec.o)
-                0x08007508                __pow5mult
+                0x08007614       0xd8 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-mprec.o)
+                0x08007614                __pow5mult
  .text.__lshift
-                0x080075e0       0xf8 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-mprec.o)
-                0x080075e0                __lshift
- .text.__mcmp   0x080076d8       0x50 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-mprec.o)
-                0x080076d8                __mcmp
- .text.__mdiff  0x08007728      0x1a4 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-mprec.o)
-                0x08007728                __mdiff
- .text.__d2b    0x080078cc       0xd4 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-mprec.o)
-                0x080078cc                __d2b
+                0x080076ec       0xf8 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-mprec.o)
+                0x080076ec                __lshift
+ .text.__mcmp   0x080077e4       0x50 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-mprec.o)
+                0x080077e4                __mcmp
+ .text.__mdiff  0x08007834      0x1a4 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-mprec.o)
+                0x08007834                __mdiff
+ .text.__d2b    0x080079d8       0xd4 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-mprec.o)
+                0x080079d8                __d2b
  .text.fiprintf
-                0x080079a0       0x28 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-fiprintf.o)
-                0x080079a0                fiprintf
- .text.__errno  0x080079c8        0xc /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-errno.o)
-                0x080079c8                __errno
- .text.abort    0x080079d4       0x10 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-abort.o)
-                0x080079d4                abort
+                0x08007aac       0x28 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-fiprintf.o)
+                0x08007aac                fiprintf
+ .text.__errno  0x08007ad4        0xc /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-errno.o)
+                0x08007ad4                __errno
+ .text.abort    0x08007ae0       0x10 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-abort.o)
+                0x08007ae0                abort
  .text._calloc_r
-                0x080079e4       0xcc /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-callocr.o)
-                0x080079e4                _calloc_r
+                0x08007af0       0xcc /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-callocr.o)
+                0x08007af0                _calloc_r
  .text._realloc_r
-                0x08007ab0      0x344 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-reallocr.o)
-                0x08007ab0                _realloc_r
+                0x08007bbc      0x344 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-reallocr.o)
+                0x08007bbc                _realloc_r
  .text._raise_r
-                0x08007df4       0x60 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-signal.o)
-                0x08007df4                _raise_r
- .text.raise    0x08007e54       0x14 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-signal.o)
-                0x08007e54                raise
- .text.get_arg  0x08007e68      0x404 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-vfiprintf.o)
+                0x08007f00       0x60 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-signal.o)
+                0x08007f00                _raise_r
+ .text.raise    0x08007f60       0x14 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-signal.o)
+                0x08007f60                raise
+ .text.get_arg  0x08007f74      0x404 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-vfiprintf.o)
  .text._vfiprintf_r
-                0x0800826c     0x16d0 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-vfiprintf.o)
-                0x0800826c                _vfiprintf_r
+                0x08008378     0x16d0 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-vfiprintf.o)
+                0x08008378                _vfiprintf_r
  .text.__sbprintf
-                0x0800993c       0x7c /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-vfiprintf.o)
+                0x08009a48       0x7c /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-vfiprintf.o)
  .text.stdio_exit_handler
-                0x080099b8       0x20 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-findfp.o)
+                0x08009ac4       0x20 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-findfp.o)
  .text.cleanup_stdio
-                0x080099d8       0x40 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-findfp.o)
+                0x08009ae4       0x40 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-findfp.o)
  .text.global_stdio_init.part.0
-                0x08009a18      0x120 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-findfp.o)
- .text.__sinit  0x08009b38       0x3c /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-findfp.o)
-                0x08009b38                __sinit
+                0x08009b24      0x120 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-findfp.o)
+ .text.__sinit  0x08009c44       0x3c /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-findfp.o)
+                0x08009c44                __sinit
  .text.__sfp_lock_acquire
-                0x08009b74       0x14 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-findfp.o)
-                0x08009b74                __sfp_lock_acquire
+                0x08009c80       0x14 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-findfp.o)
+                0x08009c80                __sfp_lock_acquire
  .text.__sfp_lock_release
-                0x08009b88       0x14 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-findfp.o)
-                0x08009b88                __sfp_lock_release
+                0x08009c94       0x14 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-findfp.o)
+                0x08009c94                __sfp_lock_release
  .text._fwalk_sglue
-                0x08009b9c       0x4c /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-fwalk.o)
-                0x08009b9c                _fwalk_sglue
+                0x08009ca8       0x4c /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-fwalk.o)
+                0x08009ca8                _fwalk_sglue
  .text.__sprint_r
-                0x08009be8       0x24 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-sprint_r.o)
-                0x08009be8                __sprint_r
+                0x08009cf4       0x24 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-sprint_r.o)
+                0x08009cf4                __sprint_r
  .text.__sflush_r
-                0x08009c0c      0x180 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-fflush.o)
-                0x08009c0c                __sflush_r
+                0x08009d18      0x180 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-fflush.o)
+                0x08009d18                __sflush_r
  .text._fflush_r
-                0x08009d8c       0x70 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-fflush.o)
-                0x08009d8c                _fflush_r
+                0x08009e98       0x70 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-fflush.o)
+                0x08009e98                _fflush_r
  .text.__swsetup_r
-                0x08009dfc       0xd4 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-wsetup.o)
-                0x08009dfc                __swsetup_r
+                0x08009f08       0xd4 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-wsetup.o)
+                0x08009f08                __swsetup_r
  .text.__sfvwrite_r
-                0x08009ed0      0x31c /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-fvwrite.o)
-                0x08009ed0                __sfvwrite_r
- .text.__sread  0x0800a1ec       0x34 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-stdio.o)
-                0x0800a1ec                __sread
+                0x08009fdc      0x31c /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-fvwrite.o)
+                0x08009fdc                __sfvwrite_r
+ .text.__sread  0x0800a2f8       0x34 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-stdio.o)
+                0x0800a2f8                __sread
  .text.__swrite
-                0x0800a220       0x4c /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-stdio.o)
-                0x0800a220                __swrite
- .text.__sseek  0x0800a26c       0x3c /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-stdio.o)
-                0x0800a26c                __sseek
+                0x0800a32c       0x4c /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-stdio.o)
+                0x0800a32c                __swrite
+ .text.__sseek  0x0800a378       0x3c /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-stdio.o)
+                0x0800a378                __sseek
  .text.__sclose
-                0x0800a2a8       0x10 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-stdio.o)
-                0x0800a2a8                __sclose
+                0x0800a3b4       0x10 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-stdio.o)
+                0x0800a3b4                __sclose
  .text._fclose_r
-                0x0800a2b8       0xdc /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-fclose.o)
-                0x0800a2b8                _fclose_r
+                0x0800a3c4       0xdc /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-fclose.o)
+                0x0800a3c4                _fclose_r
  .text.__smakebuf_r
-                0x0800a394       0xe0 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-makebuf.o)
-                0x0800a394                __smakebuf_r
+                0x0800a4a0       0xe0 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-makebuf.o)
+                0x0800a4a0                __smakebuf_r
  .text._memalign_r
-                0x0800a474      0x118 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-malignr.o)
-                0x0800a474                _memalign_r
- .text._exit    0x0800a58c       0x14 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libsysbase.a(libsysbase_libsysbase_a-_exit.o)
-                0x0800a58c                _exit
+                0x0800a580      0x118 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-malignr.o)
+                0x0800a580                _memalign_r
+ .text._exit    0x0800a698       0x14 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libsysbase.a(libsysbase_libsysbase_a-_exit.o)
+                0x0800a698                _exit
  .text._fstat_r
-                0x0800a5a0       0x5c /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libsysbase.a(libsysbase_libsysbase_a-fstat.o)
-                0x0800a5a0                _fstat_r
+                0x0800a6ac       0x5c /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libsysbase.a(libsysbase_libsysbase_a-fstat.o)
+                0x0800a6ac                _fstat_r
  .text._getpid_r
-                0x0800a5fc        0xc /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libsysbase.a(libsysbase_libsysbase_a-getpid.o)
-                0x0800a5fc                _getpid_r
+                0x0800a708        0xc /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libsysbase.a(libsysbase_libsysbase_a-getpid.o)
+                0x0800a708                _getpid_r
  .text.__getreent
-                0x0800a608       0x20 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libsysbase.a(libsysbase_libsysbase_a-getreent.o)
-                0x0800a608                __getreent
+                0x0800a714       0x20 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libsysbase.a(libsysbase_libsysbase_a-getreent.o)
+                0x0800a714                __getreent
  .text.__get_handle
-                0x0800a628       0x34 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libsysbase.a(libsysbase_libsysbase_a-handle_manager.o)
-                0x0800a628                __get_handle
+                0x0800a734       0x34 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libsysbase.a(libsysbase_libsysbase_a-handle_manager.o)
+                0x0800a734                __get_handle
  .text._close_r
-                0x0800a65c       0xb0 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libsysbase.a(libsysbase_libsysbase_a-handle_manager.o)
-                0x0800a65c                _close_r
+                0x0800a768       0xb0 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libsysbase.a(libsysbase_libsysbase_a-handle_manager.o)
+                0x0800a768                _close_r
  .text.null_write
-                0x0800a70c        0x4 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libsysbase.a(libsysbase_libsysbase_a-iosupport.o)
+                0x0800a818        0x4 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libsysbase.a(libsysbase_libsysbase_a-iosupport.o)
  .text._isatty_r
-                0x0800a710        0x4 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libsysbase.a(libsysbase_libsysbase_a-isatty.o)
-                0x0800a710                _isatty_r
- .text._kill_r  0x0800a714        0xc /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libsysbase.a(libsysbase_libsysbase_a-kill.o)
-                0x0800a714                _kill_r
+                0x0800a81c        0x4 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libsysbase.a(libsysbase_libsysbase_a-isatty.o)
+                0x0800a81c                _isatty_r
+ .text._kill_r  0x0800a820        0xc /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libsysbase.a(libsysbase_libsysbase_a-kill.o)
+                0x0800a820                _kill_r
  .text._lseek_r
-                0x0800a720       0x64 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libsysbase.a(libsysbase_libsysbase_a-lseek.o)
-                0x0800a720                _lseek_r
- .text._read_r  0x0800a784       0x5c /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libsysbase.a(libsysbase_libsysbase_a-read.o)
-                0x0800a784                _read_r
- .text._sbrk_r  0x0800a7e0       0x50 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libsysbase.a(libsysbase_libsysbase_a-sbrk.o)
-                0x0800a7e0                _sbrk_r
+                0x0800a82c       0x64 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libsysbase.a(libsysbase_libsysbase_a-lseek.o)
+                0x0800a82c                _lseek_r
+ .text._read_r  0x0800a890       0x5c /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libsysbase.a(libsysbase_libsysbase_a-read.o)
+                0x0800a890                _read_r
+ .text._sbrk_r  0x0800a8ec       0x50 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libsysbase.a(libsysbase_libsysbase_a-sbrk.o)
+                0x0800a8ec                _sbrk_r
  .text.__libc_lock_acquire
-                0x0800a830       0x18 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libsysbase.a(libsysbase_libsysbase_a-syscall_support.o)
-                0x0800a830                __libc_lock_acquire
+                0x0800a93c       0x18 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libsysbase.a(libsysbase_libsysbase_a-syscall_support.o)
+                0x0800a93c                __libc_lock_acquire
  .text.__libc_lock_release
-                0x0800a848       0x18 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libsysbase.a(libsysbase_libsysbase_a-syscall_support.o)
-                0x0800a848                __libc_lock_release
+                0x0800a954       0x18 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libsysbase.a(libsysbase_libsysbase_a-syscall_support.o)
+                0x0800a954                __libc_lock_release
  .text.__libc_lock_acquire_recursive
-                0x0800a860       0x18 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libsysbase.a(libsysbase_libsysbase_a-syscall_support.o)
-                0x0800a860                __libc_lock_acquire_recursive
+                0x0800a96c       0x18 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libsysbase.a(libsysbase_libsysbase_a-syscall_support.o)
+                0x0800a96c                __libc_lock_acquire_recursive
  .text.__libc_lock_release_recursive
-                0x0800a878       0x18 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libsysbase.a(libsysbase_libsysbase_a-syscall_support.o)
-                0x0800a878                __libc_lock_release_recursive
+                0x0800a984       0x18 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libsysbase.a(libsysbase_libsysbase_a-syscall_support.o)
+                0x0800a984                __libc_lock_release_recursive
  .text._write_r
-                0x0800a890       0x5c /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libsysbase.a(libsysbase_libsysbase_a-write.o)
-                0x0800a890                _write_r
- .text          0x0800a8ec       0x14 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/thumb/libgcc.a(_thumb1_case_uqi.o)
-                0x0800a8ec                __gnu_thumb1_case_uqi
- .text          0x0800a900       0x14 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/thumb/libgcc.a(_thumb1_case_uhi.o)
-                0x0800a900                __gnu_thumb1_case_uhi
- .text          0x0800a914      0x11c /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/thumb/libgcc.a(_udivsi3.o)
-                0x0800a914                __udivsi3
-                0x0800a914                __aeabi_uidiv
-                0x0800aa10                __aeabi_uidivmod
- .text          0x0800aa30      0x424 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/thumb/libgcc.a(_arm_addsubdf3.o)
-                0x0800aa30                __aeabi_drsub
-                0x0800aa38                __subdf3
-                0x0800aa38                __aeabi_dsub
-                0x0800aa3c                __aeabi_dadd
-                0x0800aa3c                __adddf3
-                0x0800ad4c                __aeabi_ui2d
-                0x0800ad4c                __floatunsidf
-                0x0800ad70                __floatsidf
-                0x0800ad70                __aeabi_i2d
-                0x0800ad98                __extendsfdf2
-                0x0800ad98                __aeabi_f2d
-                0x0800ade0                __aeabi_ul2d
-                0x0800ade0                __floatundidf
-                0x0800adf4                __aeabi_l2d
-                0x0800adf4                __floatdidf
- .text          0x0800ae54      0x49c /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/thumb/libgcc.a(_arm_muldivdf3.o)
-                0x0800ae54                __aeabi_dmul
-                0x0800ae54                __muldf3
-                0x0800b0e4                __aeabi_ddiv
-                0x0800b0e4                __divdf3
- .text          0x0800b2f0      0x144 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/thumb/libgcc.a(_arm_cmpdf2.o)
-                0x0800b2f0                __gedf2
-                0x0800b2f0                __gtdf2
-                0x0800b2f8                __ledf2
-                0x0800b2f8                __ltdf2
-                0x0800b300                __cmpdf2
-                0x0800b300                __eqdf2
-                0x0800b300                __nedf2
-                0x0800b388                __aeabi_cdrcmple
-                0x0800b3a4                __aeabi_cdcmple
-                0x0800b3a4                __aeabi_cdcmpeq
-                0x0800b3bc                __aeabi_dcmpeq
-                0x0800b3d4                __aeabi_dcmplt
-                0x0800b3ec                __aeabi_dcmple
-                0x0800b404                __aeabi_dcmpge
-                0x0800b41c                __aeabi_dcmpgt
- .text          0x0800b434       0x38 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/thumb/libgcc.a(_arm_unorddf2.o)
-                0x0800b434                __aeabi_dcmpun
-                0x0800b434                __unorddf2
- .text          0x0800b46c       0x5c /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/thumb/libgcc.a(_arm_fixdfsi.o)
-                0x0800b46c                __fixdfsi
-                0x0800b46c                __aeabi_d2iz
- .text          0x0800b4c8       0x3c /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/thumb/libgcc.a(_aeabi_uldivmod.o)
-                0x0800b4c8                __aeabi_uldivmod
+                0x0800a99c       0x5c /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libsysbase.a(libsysbase_libsysbase_a-write.o)
+                0x0800a99c                _write_r
+ .text          0x0800a9f8       0x14 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/thumb/libgcc.a(_thumb1_case_uqi.o)
+                0x0800a9f8                __gnu_thumb1_case_uqi
+ .text          0x0800aa0c       0x14 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/thumb/libgcc.a(_thumb1_case_uhi.o)
+                0x0800aa0c                __gnu_thumb1_case_uhi
+ .text          0x0800aa20      0x11c /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/thumb/libgcc.a(_udivsi3.o)
+                0x0800aa20                __udivsi3
+                0x0800aa20                __aeabi_uidiv
+                0x0800ab1c                __aeabi_uidivmod
+ .text          0x0800ab3c      0x424 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/thumb/libgcc.a(_arm_addsubdf3.o)
+                0x0800ab3c                __aeabi_drsub
+                0x0800ab44                __subdf3
+                0x0800ab44                __aeabi_dsub
+                0x0800ab48                __aeabi_dadd
+                0x0800ab48                __adddf3
+                0x0800ae58                __aeabi_ui2d
+                0x0800ae58                __floatunsidf
+                0x0800ae7c                __floatsidf
+                0x0800ae7c                __aeabi_i2d
+                0x0800aea4                __extendsfdf2
+                0x0800aea4                __aeabi_f2d
+                0x0800aeec                __aeabi_ul2d
+                0x0800aeec                __floatundidf
+                0x0800af00                __aeabi_l2d
+                0x0800af00                __floatdidf
+ .text          0x0800af60      0x49c /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/thumb/libgcc.a(_arm_muldivdf3.o)
+                0x0800af60                __aeabi_dmul
+                0x0800af60                __muldf3
+                0x0800b1f0                __aeabi_ddiv
+                0x0800b1f0                __divdf3
+ .text          0x0800b3fc      0x144 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/thumb/libgcc.a(_arm_cmpdf2.o)
+                0x0800b3fc                __gedf2
+                0x0800b3fc                __gtdf2
+                0x0800b404                __ledf2
+                0x0800b404                __ltdf2
+                0x0800b40c                __cmpdf2
+                0x0800b40c                __eqdf2
+                0x0800b40c                __nedf2
+                0x0800b494                __aeabi_cdrcmple
+                0x0800b4b0                __aeabi_cdcmple
+                0x0800b4b0                __aeabi_cdcmpeq
+                0x0800b4c8                __aeabi_dcmpeq
+                0x0800b4e0                __aeabi_dcmplt
+                0x0800b4f8                __aeabi_dcmple
+                0x0800b510                __aeabi_dcmpge
+                0x0800b528                __aeabi_dcmpgt
+ .text          0x0800b540       0x38 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/thumb/libgcc.a(_arm_unorddf2.o)
+                0x0800b540                __aeabi_dcmpun
+                0x0800b540                __unorddf2
+ .text          0x0800b578       0x5c /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/thumb/libgcc.a(_arm_fixdfsi.o)
+                0x0800b578                __fixdfsi
+                0x0800b578                __aeabi_d2iz
+ .text          0x0800b5d4       0x3c /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/thumb/libgcc.a(_aeabi_uldivmod.o)
+                0x0800b5d4                __aeabi_uldivmod
  .text.__udivmoddi4
-                0x0800b504      0x194 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/thumb/libgcc.a(_udivmoddi4.o)
-                0x0800b504                __udivmoddi4
- .text          0x0800b698       0x28 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/thumb/libgcc.a(_clzdi2.o)
-                0x0800b698                __clzdi2
- .text          0x0800b6c0       0x48 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/thumb/libgcc.a(_clzsi2.o)
-                0x0800b6c0                __clzsi2
- .text.free     0x0800b708       0x14 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-malloc.o)
-                0x0800b708                free
- *fill*         0x0800b71c        0x4 ff
+                0x0800b610      0x194 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/thumb/libgcc.a(_udivmoddi4.o)
+                0x0800b610                __udivmoddi4
+ .text          0x0800b7a4       0x28 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/thumb/libgcc.a(_clzdi2.o)
+                0x0800b7a4                __clzdi2
+ .text          0x0800b7cc       0x48 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/thumb/libgcc.a(_clzsi2.o)
+                0x0800b7cc                __clzsi2
+ .text.free     0x0800b814       0x14 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-malloc.o)
+                0x0800b814                free
  .text.free.__stub
-                0x0800b720       0xb4 linker stubs
+                0x0800b828       0xb4 linker stubs
  *(.gnu.linkonce.t.*)
  *(.text.*personality*)
  *(.gnu.warning)
  *(.glue_7t)
- .glue_7t       0x0800b7e0        0x0 linker stubs
+ .glue_7t       0x0800b8e8        0x0 linker stubs
  *(.glue_7)
- .glue_7        0x0800b7e0        0x0 linker stubs
+ .glue_7        0x0800b8e8        0x0 linker stubs
  *(.vfp11_veneer)
- .vfp11_veneer  0x0800b7e0        0x0 linker stubs
-                0x0800b7e0                        . = ALIGN (0x4)
-                0x0800b7e0                        __text_end = .
+ .vfp11_veneer  0x0800b8e8        0x0 linker stubs
+                0x0800b8e8                        . = ALIGN (0x4)
+                0x0800b8e8                        __text_end = .
 
-.v4_bx          0x0800b7e0        0x0
- .v4_bx         0x0800b7e0        0x0 linker stubs
+.v4_bx          0x0800b8e8        0x0
+ .v4_bx         0x0800b8e8        0x0 linker stubs
 
-.iplt           0x0800b7e0        0x0
- .iplt          0x0800b7e0        0x0 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/gba_crt0.o
+.iplt           0x0800b8e8        0x0
+ .iplt          0x0800b8e8        0x0 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/gba_crt0.o
 
-.fini           0x0800b7e0        0xc
+.fini           0x0800b8e8        0xc
  *(.fini)
- .fini          0x0800b7e0        0x4 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/thumb/crti.o
-                0x0800b7e0                _fini
- .fini          0x0800b7e4        0x8 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/thumb/crtn.o
-                0x0800b7ec                        . = ALIGN (0x4)
+ .fini          0x0800b8e8        0x4 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/thumb/crti.o
+                0x0800b8e8                _fini
+ .fini          0x0800b8ec        0x8 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/thumb/crtn.o
+                0x0800b8f4                        . = ALIGN (0x4)
 
-.rodata         0x0800b7f0     0x5698
+.rodata         0x0800b8f8     0x5780
  *(.rodata)
- .rodata        0x0800b7f0       0xc2 8ad_decoder.o
-                0x0800b800                ima_step_table
- *fill*         0x0800b8b2        0x2 ff
- .rodata        0x0800b8b4      0x2f8 font.o
-                0x0800b8b4                font_data
- .rodata        0x0800bbac       0x28 main.o
- .rodata        0x0800bbd4       0x44 spectrum_visualizer.o
- .rodata        0x0800bc18        0xc visualization_manager.o
- .rodata        0x0800bc24       0x50 waveform_visualizer.o
- .rodata        0x0800bc74     0x4a40 polygondwanaland_128.o
-                0x0800bc74                polygondwanaland_128Tiles
-                0x0800fcb4                polygondwanaland_128Map
-                0x080104b4                polygondwanaland_128Pal
+ .rodata        0x0800b8f8       0xc2 8ad_decoder.o
+                0x0800b908                ima_step_table
+ *fill*         0x0800b9ba        0x2 ff
+ .rodata        0x0800b9bc      0x2f8 font.o
+                0x0800b9bc                font_data
+ .rodata        0x0800bcb4       0x30 main.o
+ .rodata        0x0800bce4       0x44 spectrum_visualizer.o
+ .rodata        0x0800bd28        0xc visualization_manager.o
+ .rodata        0x0800bd34      0x130 waveform_visualizer.o
+ .rodata        0x0800be64     0x4a40 polygondwanaland_128.o
+                0x0800be64                polygondwanaland_128Tiles
+                0x0800fea4                polygondwanaland_128Map
+                0x080106a4                polygondwanaland_128Pal
  *all.rodata*(*)
  *(.roda)
  *(.rodata.*)
  .rodata.str1.4
-                0x080106b4      0x2fc 8ad_player.o
+                0x080108a4      0x2fc 8ad_player.o
                                  0xb9 (size before relaxing)
  .rodata.str1.4
-                0x080109b0        0xd libgbfs.o
+                0x08010ba0        0xd libgbfs.o
  .rodata.str1.4
-                0x080109b0       0xc6 main.o
+                0x08010ba0       0xc6 main.o
  .rodata.str1.4
-                0x080109b0       0x30 visualization_manager.o
+                0x08010ba0       0x30 visualization_manager.o
  .rodata._svfprintf_r.str1.1
-                0x080109b0       0x3b /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-svfprintf.o)
- *fill*         0x080109eb        0x1 ff
+                0x08010ba0       0x3b /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-svfprintf.o)
+ *fill*         0x08010bdb        0x1 ff
  .rodata.zeroes.0
-                0x080109ec       0x10 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-svfprintf.o)
+                0x08010bdc       0x10 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-svfprintf.o)
  .rodata.blanks.1
-                0x080109fc       0x10 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-svfprintf.o)
+                0x08010bec       0x10 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-svfprintf.o)
  .rodata.__action_table
-                0x08010a0c       0x6c /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-svfiprintf.o)
-                0x08010a0c                __action_table
+                0x08010bfc       0x6c /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-svfiprintf.o)
+                0x08010bfc                __action_table
  .rodata.__state_table
-                0x08010a78       0x6c /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-svfiprintf.o)
-                0x08010a78                __state_table
+                0x08010c68       0x6c /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-svfiprintf.o)
+                0x08010c68                __state_table
  .rodata.__chclass
-                0x08010ae4      0x100 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-svfiprintf.o)
-                0x08010ae4                __chclass
+                0x08010cd4      0x100 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-svfiprintf.o)
+                0x08010cd4                __chclass
  .rodata.str1.4
-                0x08010be4       0x4c /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-locale.o)
+                0x08010dd4       0x4c /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-locale.o)
  .rodata._dtoa_r.str1.4
-                0x08010be4       0x67 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-dtoa.o)
+                0x08010dd4       0x67 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-dtoa.o)
  .rodata._ctype_
-                0x08010be4      0x101 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-ctype_.o)
-                0x08010be4                _ctype_
+                0x08010dd4      0x101 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-ctype_.o)
+                0x08010dd4                _ctype_
  .rodata.__assert_func.str1.4
-                0x08010ce5       0x43 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-assert.o)
+                0x08010ed5       0x43 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-assert.o)
  .rodata.__multadd.str1.4
-                0x08010ce5       0x54 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-mprec.o)
- *fill*         0x08010ce5        0x3 ff
- .rodata.p05.0  0x08010ce8        0xc /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-mprec.o)
- *fill*         0x08010cf4        0x4 ff
+                0x08010ed5       0x54 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-mprec.o)
+ *fill*         0x08010ed5        0x3 ff
+ .rodata.p05.0  0x08010ed8        0xc /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-mprec.o)
+ *fill*         0x08010ee4        0x4 ff
  .rodata.__mprec_bigtens
-                0x08010cf8       0x28 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-mprec.o)
-                0x08010cf8                __mprec_bigtens
+                0x08010ee8       0x28 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-mprec.o)
+                0x08010ee8                __mprec_bigtens
  .rodata.__mprec_tens
-                0x08010d20       0xc8 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-mprec.o)
-                0x08010d20                __mprec_tens
+                0x08010f10       0xc8 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-mprec.o)
+                0x08010f10                __mprec_tens
  .rodata._vfiprintf_r.str1.1
-                0x08010de8       0x29 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-vfiprintf.o)
+                0x08010fd8       0x29 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-vfiprintf.o)
  .rodata.zeroes.0
-                0x08010de8       0x10 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-vfiprintf.o)
+                0x08010fd8       0x10 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-vfiprintf.o)
  .rodata.blanks.1
-                0x08010df8       0x10 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-vfiprintf.o)
+                0x08010fe8       0x10 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-vfiprintf.o)
  .rodata.AddDevice.str1.4
-                0x08010e08        0x8 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libsysbase.a(libsysbase_libsysbase_a-iosupport.o)
+                0x08010ff8        0x8 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libsysbase.a(libsysbase_libsysbase_a-iosupport.o)
  .rodata.dotab_stdnull
-                0x08010e08       0x80 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libsysbase.a(libsysbase_libsysbase_a-iosupport.o)
-                0x08010e08                dotab_stdnull
+                0x08010ff8       0x80 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libsysbase.a(libsysbase_libsysbase_a-iosupport.o)
+                0x08010ff8                dotab_stdnull
  *(.gnu.linkonce.r*)
-                0x08010e88                        . = ALIGN (0x4)
+                0x08011078                        . = ALIGN (0x4)
 
 .ARM.extab
  *(.ARM.extab* .gnu.linkonce.armextab.*)
-                0x08010e88                        __exidx_start = .
+                0x08011078                        __exidx_start = .
 
 .ARM.exidx
  *(.ARM.exidx* .gnu.linkonce.armexidx.*)
-                0x08010e88                        __exidx_end = .
+                0x08011078                        __exidx_end = .
 
-.ctors          0x08010e88        0x0
+.ctors          0x08011078        0x0
  *crtbegin.o(.ctors)
  *(EXCLUDE_FILE(*crtend.o) .ctors)
  *(SORT_BY_NAME(.ctors.*))
  *(.ctors)
-                0x08010e88                        . = ALIGN (0x4)
+                0x08011078                        . = ALIGN (0x4)
 
-.dtors          0x08010e88        0x0
+.dtors          0x08011078        0x0
  *crtbegin.o(.dtors)
  *(EXCLUDE_FILE(*crtend.o) .dtors)
  *(SORT_BY_NAME(.dtors.*))
  *(.dtors)
-                0x08010e88                        . = ALIGN (0x4)
+                0x08011078                        . = ALIGN (0x4)
 
-.eh_frame       0x08010e88        0x4
+.eh_frame       0x08011078        0x4
  *(.eh_frame)
- .eh_frame      0x08010e88        0x0 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/thumb/crtbegin.o
- .eh_frame      0x08010e88        0x4 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/thumb/crtend.o
-                0x08010e8c                        . = ALIGN (0x4)
+ .eh_frame      0x08011078        0x0 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/thumb/crtbegin.o
+ .eh_frame      0x08011078        0x4 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/thumb/crtend.o
+                0x0801107c                        . = ALIGN (0x4)
 
 .gcc_except_table
-                0x08010e8c        0x0
+                0x0801107c        0x0
  *(.gcc_except_table)
-                0x08010e8c                        . = ALIGN (0x4)
-                0x08010e8c                        __iwram_lma = .
+                0x0801107c                        . = ALIGN (0x4)
+                0x0801107c                        __iwram_lma = .
 
-.iwram          0x03000000       0xb8 load address 0x08010e8c
+.iwram          0x03000000       0xb8 load address 0x0801107c
                 0x03000000                        __iwram_start__ = ABSOLUTE (.)
  *(.iwram .iwram*)
  .iwram         0x03000000       0xb8 /opt/devkitpro/libgba/lib/libgba.a(InterruptDispatcher.o)
@@ -1256,9 +1256,9 @@ Linker script and memory map
  *iwram.*(.text* .data*)
                 0x030000b8                        . = ALIGN (0x4)
                 0x030000b8                        __iwram_end__ = ABSOLUTE (.)
-                0x08010f44                        __data_lma = (__iwram_lma + SIZEOF (.iwram))
+                0x08011134                        __data_lma = (__iwram_lma + SIZEOF (.iwram))
 
-.bss            0x030000b8      0x574
+.bss            0x030000b8      0x614
                 0x030000b8                        __bss_start = ABSOLUTE (.)
                 0x030000b8                        __bss_start__ = ABSOLUTE (.)
  *(.dynbss)
@@ -1277,190 +1277,190 @@ Linker script and memory map
                 0x03000138                bass_filter_state
  .bss           0x0300039c        0x1 album_cover.o
  *fill*         0x0300039d        0x3 
- .bss           0x030003a0        0x8 main.o
-                0x030003a0                fs
- .bss           0x030003a8       0x28 spectrum_visualizer.o
- .bss           0x030003d0        0x3 visualization_manager.o
- *fill*         0x030003d3        0x1 
- .bss           0x030003d4       0x18 waveform_visualizer.o
- .bss           0x030003ec       0x78 /opt/devkitpro/libgba/lib/libgba.a(interrupt.o)
-                0x030003ec                IntrTable
+ .bss           0x030003a0       0x20 main.o
+                0x030003a4                fs
+ .bss           0x030003c0       0x34 spectrum_visualizer.o
+ .bss           0x030003f4        0x3 visualization_manager.o
+ *fill*         0x030003f7        0x1 
+ .bss           0x030003f8       0x94 waveform_visualizer.o
+ .bss           0x0300048c       0x78 /opt/devkitpro/libgba/lib/libgba.a(interrupt.o)
+                0x0300048c                IntrTable
  .bss.__malloc_current_mallinfo
-                0x03000464       0x28 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-mallocr.o)
-                0x03000464                __malloc_current_mallinfo
+                0x03000504       0x28 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-mallocr.o)
+                0x03000504                __malloc_current_mallinfo
  .bss.__malloc_max_total_mem
-                0x0300048c        0x4 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-mallocr.o)
-                0x0300048c                __malloc_max_total_mem
+                0x0300052c        0x4 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-mallocr.o)
+                0x0300052c                __malloc_max_total_mem
  .bss.__malloc_max_sbrked_mem
-                0x03000490        0x4 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-mallocr.o)
-                0x03000490                __malloc_max_sbrked_mem
+                0x03000530        0x4 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-mallocr.o)
+                0x03000530                __malloc_max_sbrked_mem
  .bss.__malloc_top_pad
-                0x03000494        0x4 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-mallocr.o)
-                0x03000494                __malloc_top_pad
+                0x03000534        0x4 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-mallocr.o)
+                0x03000534                __malloc_top_pad
  .bss.__malloc_recursive_mutex
-                0x03000498        0xc /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-mlock.o)
+                0x03000538        0xc /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-mlock.o)
  .bss.__sfp_recursive_mutex
-                0x030004a4        0xc /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-findfp.o)
- .bss.__sf      0x030004b0      0x168 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-findfp.o)
-                0x030004b0                __sf
+                0x03000544        0xc /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-findfp.o)
+ .bss.__sf      0x03000550      0x168 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-findfp.o)
+                0x03000550                __sf
  .bss.__stdio_exit_handler
-                0x03000618        0x4 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-findfp.o)
-                0x03000618                __stdio_exit_handler
+                0x030006b8        0x4 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-findfp.o)
+                0x030006b8                __stdio_exit_handler
  .bss.__hndl_lock
-                0x0300061c        0x4 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libsysbase.a(libsysbase_libsysbase_a-handle_manager.o)
+                0x030006bc        0x4 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libsysbase.a(libsysbase_libsysbase_a-handle_manager.o)
  .bss.fake_heap_start
-                0x03000620        0x4 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libsysbase.a(libsysbase_libsysbase_a-malloc_vars.o)
-                0x03000620                fake_heap_start
+                0x030006c0        0x4 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libsysbase.a(libsysbase_libsysbase_a-malloc_vars.o)
+                0x030006c0                fake_heap_start
  .bss.fake_heap_end
-                0x03000624        0x4 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libsysbase.a(libsysbase_libsysbase_a-malloc_vars.o)
-                0x03000624                fake_heap_end
+                0x030006c4        0x4 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libsysbase.a(libsysbase_libsysbase_a-malloc_vars.o)
+                0x030006c4                fake_heap_end
  .bss.heap_start.0
-                0x03000628        0x4 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libsysbase.a(libsysbase_libsysbase_a-sbrk.o)
+                0x030006c8        0x4 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libsysbase.a(libsysbase_libsysbase_a-sbrk.o)
  *(COMMON)
-                0x0300062c                        . = ALIGN (0x4)
-                0x0300062c                        __bss_end__ = ABSOLUTE (.)
+                0x030006cc                        . = ALIGN (0x4)
+                0x030006cc                        __bss_end__ = ABSOLUTE (.)
 
-.data           0x0300062c     0x17d4 load address 0x08010f44
-                0x0300062c                        __data_start__ = ABSOLUTE (.)
+.data           0x030006cc     0x17dc load address 0x08011134
+                0x030006cc                        __data_start__ = ABSOLUTE (.)
  *(.data*)
- .data          0x0300062c        0x4 main.o
- .data          0x03000630       0x44 spectrum_visualizer.o
- .data          0x03000674        0xc waveform_visualizer.o
+ .data          0x030006cc        0x8 main.o
+ *fill*         0x030006d4        0x4 ff
+ .data          0x030006d8       0x44 spectrum_visualizer.o
+ .data          0x0300071c       0x10 waveform_visualizer.o
  .data.__global_locale
-                0x03000680      0x16c /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-locale.o)
-                0x03000680                __global_locale
+                0x0300072c      0x16c /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-locale.o)
+                0x0300072c                __global_locale
  .data.__malloc_sbrk_base
-                0x030007ec        0x4 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-mallocr.o)
-                0x030007ec                __malloc_sbrk_base
+                0x03000898        0x4 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-mallocr.o)
+                0x03000898                __malloc_sbrk_base
  .data.__malloc_trim_threshold
-                0x030007f0        0x4 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-mallocr.o)
-                0x030007f0                __malloc_trim_threshold
- *fill*         0x030007f4        0x4 ff
+                0x0300089c        0x4 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-mallocr.o)
+                0x0300089c                __malloc_trim_threshold
  .data.__malloc_av_
-                0x030007f8      0x408 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-mallocr.o)
-                0x030007f8                __malloc_av_
- .data.__sglue  0x03000c00        0xc /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-findfp.o)
-                0x03000c00                __sglue
+                0x030008a0      0x408 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-mallocr.o)
+                0x030008a0                __malloc_av_
+ .data.__sglue  0x03000ca8        0xc /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-findfp.o)
+                0x03000ca8                __sglue
  .data._impure_ptr
-                0x03000c0c        0x4 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-impure.o)
-                0x03000c0c                _impure_ptr
+                0x03000cb4        0x4 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-impure.o)
+                0x03000cb4                _impure_ptr
  .data._impure_data
-                0x03000c10      0x140 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-impure.o)
-                0x03000c10                _impure_data
- .data.handles  0x03000d50     0x1000 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libsysbase.a(libsysbase_libsysbase_a-handle_manager.o)
+                0x03000cb8      0x140 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libg.a(libc_a-impure.o)
+                0x03000cb8                _impure_data
+ .data.handles  0x03000df8     0x1000 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libsysbase.a(libsysbase_libsysbase_a-handle_manager.o)
  .data.__stderr_handle
-                0x03001d50        0xc /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libsysbase.a(libsysbase_libsysbase_a-handle_manager.o)
+                0x03001df8        0xc /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libsysbase.a(libsysbase_libsysbase_a-handle_manager.o)
  .data.__stdout_handle
-                0x03001d5c        0xc /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libsysbase.a(libsysbase_libsysbase_a-handle_manager.o)
+                0x03001e04        0xc /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libsysbase.a(libsysbase_libsysbase_a-handle_manager.o)
  .data.__stdin_handle
-                0x03001d68        0xc /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libsysbase.a(libsysbase_libsysbase_a-handle_manager.o)
+                0x03001e10        0xc /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libsysbase.a(libsysbase_libsysbase_a-handle_manager.o)
  .data.devoptab_list
-                0x03001d74       0x8c /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libsysbase.a(libsysbase_libsysbase_a-iosupport.o)
-                0x03001d74                devoptab_list
+                0x03001e1c       0x8c /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/libsysbase.a(libsysbase_libsysbase_a-iosupport.o)
+                0x03001e1c                devoptab_list
  *(.gnu.linkonce.d*)
-                0x03001e00                        . = ALIGN (0x4)
-                0x08012718                        __preinit_lma = (__data_lma + SIZEOF (.data))
+                0x03001ea8                        . = ALIGN (0x4)
+                0x08012910                        __preinit_lma = (__data_lma + SIZEOF (.data))
 
-.igot.plt       0x03001e00        0x0 load address 0x08012718
- .igot.plt      0x03001e00        0x0 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/gba_crt0.o
+.igot.plt       0x03001ea8        0x0 load address 0x08012910
+ .igot.plt      0x03001ea8        0x0 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/gba_crt0.o
 
-.preinit_array  0x03001e00        0x0 load address 0x08012718
-                0x03001e00                        __preinit_array_start = ABSOLUTE (.)
+.preinit_array  0x03001ea8        0x0 load address 0x08012910
+                0x03001ea8                        __preinit_array_start = ABSOLUTE (.)
  *(.preinit_array)
-                0x03001e00                        __preinit_array_end = ABSOLUTE (.)
-                0x08012718                        __init_lma = (__preinit_lma + SIZEOF (.preinit_array))
+                0x03001ea8                        __preinit_array_end = ABSOLUTE (.)
+                0x08012910                        __init_lma = (__preinit_lma + SIZEOF (.preinit_array))
 
-.init_array     0x03001e00        0x4 load address 0x08012718
-                0x03001e00                        __init_array_start = ABSOLUTE (.)
+.init_array     0x03001ea8        0x4 load address 0x08012910
+                0x03001ea8                        __init_array_start = ABSOLUTE (.)
  *(SORT_BY_NAME(.init_array.*))
  *(.init_array)
- .init_array    0x03001e00        0x4 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/thumb/crtbegin.o
-                0x03001e04                        __init_array_end = ABSOLUTE (.)
-                0x0801271c                        __fini_lma = (__init_lma + SIZEOF (.init_array))
+ .init_array    0x03001ea8        0x4 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/thumb/crtbegin.o
+                0x03001eac                        __init_array_end = ABSOLUTE (.)
+                0x08012914                        __fini_lma = (__init_lma + SIZEOF (.init_array))
 
-.fini_array     0x03001e04        0x4 load address 0x0801271c
-                0x03001e04                        __fini_array_start = ABSOLUTE (.)
+.fini_array     0x03001eac        0x4 load address 0x08012914
+                0x03001eac                        __fini_array_start = ABSOLUTE (.)
  *(SORT_BY_NAME(.fini_array.*))
  *(.fini_array)
- .fini_array    0x03001e04        0x4 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/thumb/crtbegin.o
-                0x03001e08                        __fini_array_end = ABSOLUTE (.)
-                0x08012720                        __jcr_lma = (__fini_lma + SIZEOF (.fini_array))
+ .fini_array    0x03001eac        0x4 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/thumb/crtbegin.o
+                0x03001eb0                        __fini_array_end = ABSOLUTE (.)
+                0x08012918                        __jcr_lma = (__fini_lma + SIZEOF (.fini_array))
 
 .jcr
  *(.jcr)
-                0x03001e08                        __data_end__ = ABSOLUTE (.)
-                0x08012720                        __iwram_overlay_lma = (__jcr_lma + SIZEOF (.jcr))
-                0x03001e08                        __iwram_overlay_start = .
+                0x03001eb0                        __data_end__ = ABSOLUTE (.)
+                0x08012918                        __iwram_overlay_lma = (__jcr_lma + SIZEOF (.jcr))
+                0x03001eb0                        __iwram_overlay_start = .
 
-.iwram0         0x03001e08        0x0 load address 0x08012720
+.iwram0         0x03001eb0        0x0 load address 0x08012918
  *(.iwram0)
-                0x03001e08                        . = ALIGN (0x4)
-                0x08012720                        PROVIDE (__load_start_iwram0 = LOADADDR (.iwram0))
-                0x08012720                        PROVIDE (__load_stop_iwram0 = (LOADADDR (.iwram0) + SIZEOF (.iwram0)))
+                0x03001eb0                        . = ALIGN (0x4)
+                0x08012918                        PROVIDE (__load_start_iwram0 = LOADADDR (.iwram0))
+                0x08012918                        PROVIDE (__load_stop_iwram0 = (LOADADDR (.iwram0) + SIZEOF (.iwram0)))
 
-.iwram1         0x03001e08        0x0
+.iwram1         0x03001eb0        0x0
  *(.iwram1)
-                0x03001e08                        . = ALIGN (0x4)
+                0x03001eb0                        . = ALIGN (0x4)
                 [!provide]                        PROVIDE (__load_start_iwram1 = LOADADDR (.iwram1))
                 [!provide]                        PROVIDE (__load_stop_iwram1 = (LOADADDR (.iwram1) + SIZEOF (.iwram1)))
 
-.iwram2         0x03001e08        0x0
+.iwram2         0x03001eb0        0x0
  *(.iwram2)
-                0x03001e08                        . = ALIGN (0x4)
+                0x03001eb0                        . = ALIGN (0x4)
                 [!provide]                        PROVIDE (__load_start_iwram2 = LOADADDR (.iwram2))
                 [!provide]                        PROVIDE (__load_stop_iwram2 = (LOADADDR (.iwram2) + SIZEOF (.iwram2)))
 
-.iwram3         0x03001e08        0x0
+.iwram3         0x03001eb0        0x0
  *(.iwram3)
-                0x03001e08                        . = ALIGN (0x4)
+                0x03001eb0                        . = ALIGN (0x4)
                 [!provide]                        PROVIDE (__load_start_iwram3 = LOADADDR (.iwram3))
                 [!provide]                        PROVIDE (__load_stop_iwram3 = (LOADADDR (.iwram3) + SIZEOF (.iwram3)))
 
-.iwram4         0x03001e08        0x0
+.iwram4         0x03001eb0        0x0
  *(.iwram4)
-                0x03001e08                        . = ALIGN (0x4)
+                0x03001eb0                        . = ALIGN (0x4)
                 [!provide]                        PROVIDE (__load_start_iwram4 = LOADADDR (.iwram4))
                 [!provide]                        PROVIDE (__load_stop_iwram4 = (LOADADDR (.iwram4) + SIZEOF (.iwram4)))
 
-.iwram5         0x03001e08        0x0
+.iwram5         0x03001eb0        0x0
  *(.iwram5)
-                0x03001e08                        . = ALIGN (0x4)
+                0x03001eb0                        . = ALIGN (0x4)
                 [!provide]                        PROVIDE (__load_start_iwram5 = LOADADDR (.iwram5))
                 [!provide]                        PROVIDE (__load_stop_iwram5 = (LOADADDR (.iwram5) + SIZEOF (.iwram5)))
 
-.iwram6         0x03001e08        0x0
+.iwram6         0x03001eb0        0x0
  *(.iwram6)
-                0x03001e08                        . = ALIGN (0x4)
+                0x03001eb0                        . = ALIGN (0x4)
                 [!provide]                        PROVIDE (__load_start_iwram6 = LOADADDR (.iwram6))
                 [!provide]                        PROVIDE (__load_stop_iwram6 = (LOADADDR (.iwram6) + SIZEOF (.iwram6)))
 
-.iwram7         0x03001e08        0x0
+.iwram7         0x03001eb0        0x0
  *(.iwram7)
-                0x03001e08                        . = ALIGN (0x4)
+                0x03001eb0                        . = ALIGN (0x4)
                 [!provide]                        PROVIDE (__load_start_iwram7 = LOADADDR (.iwram7))
                 [!provide]                        PROVIDE (__load_stop_iwram7 = (LOADADDR (.iwram7) + SIZEOF (.iwram7)))
 
-.iwram8         0x03001e08        0x0
+.iwram8         0x03001eb0        0x0
  *(.iwram8)
-                0x03001e08                        . = ALIGN (0x4)
+                0x03001eb0                        . = ALIGN (0x4)
                 [!provide]                        PROVIDE (__load_start_iwram8 = LOADADDR (.iwram8))
                 [!provide]                        PROVIDE (__load_stop_iwram8 = (LOADADDR (.iwram8) + SIZEOF (.iwram8)))
 
-.iwram9         0x03001e08        0x0
+.iwram9         0x03001eb0        0x0
  *(.iwram9)
-                0x03001e08                        . = ALIGN (0x4)
+                0x03001eb0                        . = ALIGN (0x4)
                 [!provide]                        PROVIDE (__load_start_iwram9 = LOADADDR (.iwram9))
                 [!provide]                        PROVIDE (__load_stop_iwram9 = (LOADADDR (.iwram9) + SIZEOF (.iwram9)))
-                0x03001e08                        __iwram_overlay_end = .
-                0x08012720                        __ewram_lma = (__iwram_overlay_lma + (__iwram_overlay_end - __iwram_overlay_start))
-                0x03001e08                        __iheap_start = .
+                0x03001eb0                        __iwram_overlay_end = .
+                0x08012918                        __ewram_lma = (__iwram_overlay_lma + (__iwram_overlay_end - __iwram_overlay_start))
+                0x03001eb0                        __iheap_start = .
                 0x02000000                        __ewram_start = ORIGIN (ewram)
 
-.ewram          0x02000000        0x0 load address 0x08012720
+.ewram          0x02000000        0x0 load address 0x08012918
  *(.ewram*)
                 0x02000000                        . = ALIGN (0x4)
                 0x02000000                        __ewram_end = ABSOLUTE (.)
-                0x08012720                        __pad_lma = (__ewram_lma + SIZEOF (.ewram))
+                0x08012918                        __pad_lma = (__ewram_lma + SIZEOF (.ewram))
 
 .sbss           0x02000000        0x0
                 0x02000000                        __sbss_start__ = ABSOLUTE (.)
@@ -1470,13 +1470,13 @@ Linker script and memory map
                 0x02000000                        __end__ = ABSOLUTE (.)
                 0x02000000                        __eheap_start = ABSOLUTE (.)
 
-.pad            0x02000000        0x8 load address 0x08012720
+.pad            0x02000000        0x8 load address 0x08012918
                 0x02000000        0x4 LONG 0x52416b64
                 0x02000004        0x4 LONG 0x4d
                 0x02000008                        . = ALIGN (0x4)
-                0x08012728                        __rom_end__ = (__pad_lma + SIZEOF (.pad))
+                0x08012920                        __rom_end__ = (__pad_lma + SIZEOF (.pad))
 
-.rel.dyn        0x02000008        0x0 load address 0x08012728
+.rel.dyn        0x02000008        0x0 load address 0x08012920
  .rel.iplt      0x02000008        0x0 /opt/devkitpro/devkitARM/bin/../lib/gcc/arm-none-eabi/15.1.0/../../../../arm-none-eabi/lib/thumb/gba_crt0.o
 
 .stab
@@ -1616,75 +1616,75 @@ Linker script and memory map
 .debug_pubnames
  *(.debug_pubnames)
 
-.debug_info     0x00000000     0x41f2
+.debug_info     0x00000000     0x437f
  *(.debug_info)
  .debug_info    0x00000000      0x272 8ad_decoder.o
  .debug_info    0x00000272      0xb38 8ad_player.o
  .debug_info    0x00000daa      0x4f7 album_cover.o
  .debug_info    0x000012a1      0x4aa font.o
  .debug_info    0x0000174b      0x695 libgbfs.o
- .debug_info    0x00001de0      0xab1 main.o
- .debug_info    0x00002891      0x8f1 spectrum_visualizer.o
- .debug_info    0x00003182      0x477 visualization_manager.o
- .debug_info    0x000035f9      0x7bc waveform_visualizer.o
- .debug_info    0x00003db5      0x418 /opt/devkitpro/libgba/lib/libgba.a(interrupt.o)
- .debug_info    0x000041cd       0x25 /opt/devkitpro/libgba/lib/libgba.a(InterruptDispatcher.o)
+ .debug_info    0x00001de0      0xb5c main.o
+ .debug_info    0x0000293c      0x94b spectrum_visualizer.o
+ .debug_info    0x00003287      0x477 visualization_manager.o
+ .debug_info    0x000036fe      0x844 waveform_visualizer.o
+ .debug_info    0x00003f42      0x418 /opt/devkitpro/libgba/lib/libgba.a(interrupt.o)
+ .debug_info    0x0000435a       0x25 /opt/devkitpro/libgba/lib/libgba.a(InterruptDispatcher.o)
 
-.debug_abbrev   0x00000000     0x18a0
+.debug_abbrev   0x00000000     0x18e9
  *(.debug_abbrev)
  .debug_abbrev  0x00000000      0x19f 8ad_decoder.o
  .debug_abbrev  0x0000019f      0x35e 8ad_player.o
  .debug_abbrev  0x000004fd      0x25e album_cover.o
  .debug_abbrev  0x0000075b      0x214 font.o
  .debug_abbrev  0x0000096f      0x247 libgbfs.o
- .debug_abbrev  0x00000bb6      0x30d main.o
- .debug_abbrev  0x00000ec3      0x2f9 spectrum_visualizer.o
- .debug_abbrev  0x000011bc      0x227 visualization_manager.o
- .debug_abbrev  0x000013e3      0x28a waveform_visualizer.o
- .debug_abbrev  0x0000166d      0x21f /opt/devkitpro/libgba/lib/libgba.a(interrupt.o)
- .debug_abbrev  0x0000188c       0x14 /opt/devkitpro/libgba/lib/libgba.a(InterruptDispatcher.o)
+ .debug_abbrev  0x00000bb6      0x371 main.o
+ .debug_abbrev  0x00000f27      0x2f9 spectrum_visualizer.o
+ .debug_abbrev  0x00001220      0x227 visualization_manager.o
+ .debug_abbrev  0x00001447      0x26f waveform_visualizer.o
+ .debug_abbrev  0x000016b6      0x21f /opt/devkitpro/libgba/lib/libgba.a(interrupt.o)
+ .debug_abbrev  0x000018d5       0x14 /opt/devkitpro/libgba/lib/libgba.a(InterruptDispatcher.o)
 
-.debug_line     0x00000000     0x406b
+.debug_line     0x00000000     0x426c
  *(.debug_line)
  .debug_line    0x00000000      0x1eb 8ad_decoder.o
  .debug_line    0x000001eb      0x906 8ad_player.o
  .debug_line    0x00000af1      0x3fc album_cover.o
  .debug_line    0x00000eed      0x40c font.o
  .debug_line    0x000012f9      0x30c libgbfs.o
- .debug_line    0x00001605      0x568 main.o
- .debug_line    0x00001b6d      0xeda spectrum_visualizer.o
- .debug_line    0x00002a47      0x399 visualization_manager.o
- .debug_line    0x00002de0      0x8c3 waveform_visualizer.o
- .debug_line    0x000036a3      0x950 /opt/devkitpro/libgba/lib/libgba.a(interrupt.o)
- .debug_line    0x00003ff3       0x78 /opt/devkitpro/libgba/lib/libgba.a(InterruptDispatcher.o)
+ .debug_line    0x00001605      0x69a main.o
+ .debug_line    0x00001c9f      0xf70 spectrum_visualizer.o
+ .debug_line    0x00002c0f      0x399 visualization_manager.o
+ .debug_line    0x00002fa8      0x8fc waveform_visualizer.o
+ .debug_line    0x000038a4      0x950 /opt/devkitpro/libgba/lib/libgba.a(interrupt.o)
+ .debug_line    0x000041f4       0x78 /opt/devkitpro/libgba/lib/libgba.a(InterruptDispatcher.o)
 
-.debug_frame    0x00000000      0x6ac
+.debug_frame    0x00000000      0x6c4
  *(.debug_frame)
  .debug_frame   0x00000000       0x4c 8ad_decoder.o
  .debug_frame   0x0000004c      0x16c 8ad_player.o
  .debug_frame   0x000001b8       0x68 album_cover.o
  .debug_frame   0x00000220       0x84 font.o
  .debug_frame   0x000002a4       0xc8 libgbfs.o
- .debug_frame   0x0000036c       0x54 main.o
- .debug_frame   0x000003c0       0xd8 spectrum_visualizer.o
- .debug_frame   0x00000498       0xb0 visualization_manager.o
- .debug_frame   0x00000548       0xb4 waveform_visualizer.o
- .debug_frame   0x000005fc       0xb0 /opt/devkitpro/libgba/lib/libgba.a(interrupt.o)
+ .debug_frame   0x0000036c       0x6c main.o
+ .debug_frame   0x000003d8       0xd8 spectrum_visualizer.o
+ .debug_frame   0x000004b0       0xb0 visualization_manager.o
+ .debug_frame   0x00000560       0xb4 waveform_visualizer.o
+ .debug_frame   0x00000614       0xb0 /opt/devkitpro/libgba/lib/libgba.a(interrupt.o)
 
-.debug_str      0x00000000     0x1596
+.debug_str      0x00000000     0x16e8
  *(.debug_str)
- .debug_str     0x00000000     0x1596 8ad_decoder.o
+ .debug_str     0x00000000     0x16e8 8ad_decoder.o
                                 0x19d (size before relaxing)
- .debug_str     0x00001596      0x532 8ad_player.o
- .debug_str     0x00001596      0x349 album_cover.o
- .debug_str     0x00001596      0x271 font.o
- .debug_str     0x00001596      0x27e libgbfs.o
- .debug_str     0x00001596      0x7e7 main.o
- .debug_str     0x00001596      0x593 spectrum_visualizer.o
- .debug_str     0x00001596      0x48a visualization_manager.o
- .debug_str     0x00001596      0x531 waveform_visualizer.o
- .debug_str     0x00001596      0x334 /opt/devkitpro/libgba/lib/libgba.a(interrupt.o)
- .debug_str     0x00001596       0xba /opt/devkitpro/libgba/lib/libgba.a(InterruptDispatcher.o)
+ .debug_str     0x000016e8      0x532 8ad_player.o
+ .debug_str     0x000016e8      0x349 album_cover.o
+ .debug_str     0x000016e8      0x271 font.o
+ .debug_str     0x000016e8      0x27e libgbfs.o
+ .debug_str     0x000016e8      0x870 main.o
+ .debug_str     0x000016e8      0x5da spectrum_visualizer.o
+ .debug_str     0x000016e8      0x48a visualization_manager.o
+ .debug_str     0x000016e8      0x571 waveform_visualizer.o
+ .debug_str     0x000016e8      0x334 /opt/devkitpro/libgba/lib/libgba.a(interrupt.o)
+ .debug_str     0x000016e8       0xba /opt/devkitpro/libgba/lib/libgba.a(InterruptDispatcher.o)
 
 .debug_loc
  *(.debug_loc)
@@ -1961,7 +1961,7 @@ OUTPUT(/Users/dantedupont/repos/polygonGBA/polygon.elf elf32-littlearm)
 LOAD linker stubs
 
 .debug_loclists
-                0x00000000     0x2250
+                0x00000000     0x22a2
  .debug_loclists
                 0x00000000      0x1aa 8ad_decoder.o
  .debug_loclists
@@ -1973,18 +1973,18 @@ LOAD linker stubs
  .debug_loclists
                 0x000009c3      0x42c libgbfs.o
  .debug_loclists
-                0x00000def      0x216 main.o
+                0x00000def      0x202 main.o
  .debug_loclists
-                0x00001005      0x883 spectrum_visualizer.o
+                0x00000ff1      0x88d spectrum_visualizer.o
  .debug_loclists
-                0x00001888      0x148 visualization_manager.o
+                0x0000187e      0x148 visualization_manager.o
  .debug_loclists
-                0x000019d0      0x58c waveform_visualizer.o
+                0x000019c6      0x5e8 waveform_visualizer.o
  .debug_loclists
-                0x00001f5c      0x2f4 /opt/devkitpro/libgba/lib/libgba.a(interrupt.o)
+                0x00001fae      0x2f4 /opt/devkitpro/libgba/lib/libgba.a(interrupt.o)
 
 .debug_rnglists
-                0x00000000      0x60f
+                0x00000000      0x62b
  .debug_rnglists
                 0x00000000       0x1f 8ad_decoder.o
  .debug_rnglists
@@ -1996,15 +1996,15 @@ LOAD linker stubs
  .debug_rnglists
                 0x0000018e       0x1c libgbfs.o
  .debug_rnglists
-                0x000001aa       0x7a main.o
+                0x000001aa       0x8e main.o
  .debug_rnglists
-                0x00000224      0x252 spectrum_visualizer.o
+                0x00000238      0x257 spectrum_visualizer.o
  .debug_rnglists
-                0x00000476       0x2f visualization_manager.o
+                0x0000048f       0x2f visualization_manager.o
  .debug_rnglists
-                0x000004a5      0x127 waveform_visualizer.o
+                0x000004be      0x12a waveform_visualizer.o
  .debug_rnglists
-                0x000005cc       0x43 /opt/devkitpro/libgba/lib/libgba.a(interrupt.o)
+                0x000005e8       0x43 /opt/devkitpro/libgba/lib/libgba.a(interrupt.o)
 
 .debug_line_str
                 0x00000000       0xae

@@ -11,12 +11,13 @@ static int bar_velocities[NUM_BARS] = {0,0,0,0,0,0,0};
 static long previous_amplitudes[NUM_BARS] = {0};
 static int adaptive_scale = 1000; // Dynamic scaling factor
 static int last_track = -1; // Track last known track for palette switching
+static bool last_color_mode = false; // Track last known color mode state
 static bool is_initialized = false;
 // Removed height tracking - always update sprites for consistent rendering
 
-// Update spectrum palette based on current track
+// Update spectrum palette based on current track or easter egg
 static void update_spectrum_palette(void) {
-    if (is_final_track_8ad()) {
+    if (is_color_mode_active()) {
         // "The Fourth Color" - use full rainbow spectrum
         u16 rainbow_colors[7] = {
             RGB5(31, 0, 0),   // Bar 0: Red
@@ -47,9 +48,9 @@ static void update_spectrum_palette(void) {
     }
 }
 
-// Update background and text colors based on current track
+// Update background and text colors based on current track or easter egg
 static void update_background_colors(void) {
-    if (is_final_track_8ad()) {
+    if (is_color_mode_active()) {
         // "The Fourth Color" - white background, black text
         BG_PALETTE[0] = RGB5(31, 31, 31);  // White background (using index 255)
         BG_PALETTE[17] = RGB5(0, 0, 0);    // Black text
@@ -142,17 +143,20 @@ void cleanup_spectrum_visualizer(void) {
 }
 
 void update_spectrum_visualizer(void) {
-    // Check if track has changed and update palette accordingly
+    // Check if track or color mode has changed and update palette accordingly
     int current_track = get_current_track_8ad();
-    if (current_track != last_track) {
+    bool current_color_mode = is_color_mode_active();
+    
+    if (current_track != last_track || current_color_mode != last_color_mode) {
         update_spectrum_palette();
         update_background_colors(); // Update background and text colors too
         update_album_cover_colors(); // Update album cover colors too
         last_track = current_track;
+        last_color_mode = current_color_mode;
     }
     
-    // CRITICAL: Force bar[1] color every frame to prevent brown override
-    if (is_final_track_8ad()) {
+    // CRITICAL: Force bar[1] color every frame to prevent brown override - use cached state!
+    if (last_color_mode) {
         SPRITE_PALETTE[1 * 16 + 1] = RGB5(31, 15, 0); // Orange for rainbow mode
     } else {
         SPRITE_PALETTE[1 * 16 + 1] = RGB5(6, 12, 6);  // Game Boy green for retro mode
@@ -360,8 +364,19 @@ void update_spectrum_visualizer(void) {
 
 void render_spectrum_bars(void) {
     // Create spectrum bar sprites directly in OAM (same approach as waveform)
+    // PERFORMANCE: Cache visualization mode to avoid function call every frame
+    static VisualizationMode cached_viz_mode = VIZ_SPECTRUM_BARS;
+    static int viz_check_counter = 0;
+    
+    // Only check visualization mode every 10 frames
+    viz_check_counter++;
+    if (viz_check_counter >= 10) {
+        cached_viz_mode = get_current_visualization();
+        viz_check_counter = 0;
+    }
+    
     // Only create sprites when we're actually in spectrum mode
-    if (get_current_visualization() != VIZ_SPECTRUM_BARS) {
+    if (cached_viz_mode != VIZ_SPECTRUM_BARS) {
         return;
     }
     
