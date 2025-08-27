@@ -51,11 +51,11 @@ static void update_spectrum_palette(void) {
 static void update_background_colors(void) {
     if (is_final_track_8ad()) {
         // "The Fourth Color" - white background, black text
-        BG_PALETTE[0] = RGB5(31, 31, 31);  // White background
+        BG_PALETTE[0] = RGB5(31, 31, 31);  // White background (using index 255)
         BG_PALETTE[17] = RGB5(0, 0, 0);    // Black text
     } else {
         // All other tracks - Game Boy colors
-        BG_PALETTE[0] = RGB5(19, 23, 1);   // Game Boy bright green background
+        BG_PALETTE[0] = RGB5(19, 23, 1);   // Game Boy bright green background (using index 255)
         BG_PALETTE[17] = RGB5(1, 7, 1);    // Game Boy darkest green text
     }
 }
