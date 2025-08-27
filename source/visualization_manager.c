@@ -1,7 +1,7 @@
 #include "visualization_manager.h"
 #include "spectrum_visualizer.h"
 #include "waveform_visualizer.h"
-#include "geometric_visualizer.h"
+#include "album_cover.h"
 #include <gba.h>
 
 // Current visualization state
@@ -13,7 +13,7 @@ static bool manager_initialized = false;
 static const char* viz_names[NUM_VISUALIZATIONS] = {
     "Spectrum Bars",
     "Waveform",
-    "Geometric"
+    "Album Cover"
 };
 
 void init_visualization_manager(void) {
@@ -36,7 +36,7 @@ static void cleanup_visualization(VisualizationMode mode) {
             cleanup_waveform_visualizer();
             break;
         case VIZ_GEOMETRIC:
-            cleanup_geometric_visualizer();
+            cleanup_album_cover();
             break;
         default:
             break;
@@ -52,7 +52,7 @@ static void init_visualization(VisualizationMode mode) {
             init_waveform_visualizer();
             break;
         case VIZ_GEOMETRIC:
-            init_geometric_visualizer();
+            init_album_cover();
             break;
         default:
             break;
@@ -106,10 +106,7 @@ void update_current_visualization(void) {
             update_spectrum_visualizer();  // Process and reset spectrum data
             break;
         case VIZ_GEOMETRIC:
-            // For geometric mode: update geometric FIRST (reads spectrum data), 
-            // then spectrum processing (resets data but doesn't affect our sprites since we render after)
-            update_geometric_visualizer();
-            update_spectrum_visualizer(); // Process and reset spectrum data for next frame
+            // Album cover mode: static display, no updates needed
             break;
         default:
             break;
@@ -130,7 +127,7 @@ void render_current_visualization(void) {
             render_waveform();
             break;
         case VIZ_GEOMETRIC:
-            render_geometric_hexagon();
+            // Album cover mode: background displays automatically, no rendering needed
             break;
         default:
             break;

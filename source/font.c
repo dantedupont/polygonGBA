@@ -229,6 +229,9 @@ void draw_text(u16* buffer, int x, int y, const char* text, u16 color) {
 
 // Initialize font tiles in VRAM for tile-based text rendering
 void init_font_tiles() {
+    // Wait for VBlank like album cover does - this might be critical for memory access timing
+    while (REG_DMA3CNT & DMA_ENABLE) VBlankIntrWait();
+    
     // Use character base 0 starting from tile 1 (tile 0 reserved for space/background)
     u16* fontTiles = (u16*)CHAR_BASE_ADR(0);  // Character base 0 for text
     

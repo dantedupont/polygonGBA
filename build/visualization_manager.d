@@ -19,7 +19,7 @@ visualization_manager.o: \
  /opt/devkitpro/libgba/include/gba_video.h \
  /Users/dantedupont/repos/polygonGBA/source/spectrum_visualizer.h \
  /Users/dantedupont/repos/polygonGBA/source/waveform_visualizer.h \
- /Users/dantedupont/repos/polygonGBA/source/geometric_visualizer.h
+ /Users/dantedupont/repos/polygonGBA/source/album_cover.h
 /Users/dantedupont/repos/polygonGBA/source/visualization_manager.h:
 /opt/devkitpro/libgba/include/gba.h:
 /opt/devkitpro/libgba/include/gba_affine.h:
@@ -39,4 +39,4 @@ visualization_manager.o: \
 /opt/devkitpro/libgba/include/gba_video.h:
 /Users/dantedupont/repos/polygonGBA/source/spectrum_visualizer.h:
 /Users/dantedupont/repos/polygonGBA/source/waveform_visualizer.h:
-/Users/dantedupont/repos/polygonGBA/source/geometric_visualizer.h:
+/Users/dantedupont/repos/polygonGBA/source/album_cover.h:

@@ -1,0 +1,9 @@
+# Convert Polygondwanaland album artwork to GBA format
+# Use palette mode with 256 colors
+-gB8
+# Create both tiles and palette
+-gt
+-gp
+# Use 8x8 tiles
+-Mw 8
+-Mh 8
