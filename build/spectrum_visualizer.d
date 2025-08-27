@@ -18,7 +18,8 @@ spectrum_visualizer.o: \
  /opt/devkitpro/libgba/include/gba_timers.h \
  /opt/devkitpro/libgba/include/gba_video.h \
  /Users/dantedupont/repos/polygonGBA/source/8ad_player.h \
- /Users/dantedupont/repos/polygonGBA/source/visualization_manager.h
+ /Users/dantedupont/repos/polygonGBA/source/visualization_manager.h \
+ /Users/dantedupont/repos/polygonGBA/source/album_cover.h
 /Users/dantedupont/repos/polygonGBA/source/spectrum_visualizer.h:
 /opt/devkitpro/libgba/include/gba.h:
 /opt/devkitpro/libgba/include/gba_affine.h:
@@ -38,3 +39,4 @@ spectrum_visualizer.o: \
 /opt/devkitpro/libgba/include/gba_video.h:
 /Users/dantedupont/repos/polygonGBA/source/8ad_player.h:
 /Users/dantedupont/repos/polygonGBA/source/visualization_manager.h:
+/Users/dantedupont/repos/polygonGBA/source/album_cover.h:

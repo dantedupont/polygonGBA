@@ -1,6 +1,7 @@
 #include "spectrum_visualizer.h"
 #include "8ad_player.h"
 #include "visualization_manager.h"
+#include "album_cover.h"
 
 // Spectrum visualizer state
 static int reset_counter = 0;
@@ -9,8 +10,55 @@ static int bar_target_heights[NUM_BARS] = {8,8,8,8,8,8,8};
 static int bar_velocities[NUM_BARS] = {0,0,0,0,0,0,0};
 static long previous_amplitudes[NUM_BARS] = {0};
 static int adaptive_scale = 1000; // Dynamic scaling factor
+static int last_track = -1; // Track last known track for palette switching
 static bool is_initialized = false;
 // Removed height tracking - always update sprites for consistent rendering
+
+// Update spectrum palette based on current track
+static void update_spectrum_palette(void) {
+    if (is_final_track_8ad()) {
+        // "The Fourth Color" - use full rainbow spectrum
+        u16 rainbow_colors[7] = {
+            RGB5(31, 0, 0),   // Bar 0: Red
+            RGB5(31, 15, 0),  // Bar 1: Orange  
+            RGB5(31, 31, 0),  // Bar 2: Yellow
+            RGB5(0, 31, 0),   // Bar 3: Green
+            RGB5(0, 0, 31),   // Bar 4: Blue
+            RGB5(15, 0, 31),  // Bar 5: Indigo
+            RGB5(31, 0, 31)   // Bar 6: Violet
+        };
+        
+        for(int pal = 0; pal < 7; pal++) {
+            SPRITE_PALETTE[pal * 16 + 0] = RGB5(0, 0, 0);  // Transparent
+            SPRITE_PALETTE[pal * 16 + 1] = rainbow_colors[pal];
+        }
+        
+        // CRITICAL: Bar[1] needs individual handling even in rainbow mode
+        SPRITE_PALETTE[1 * 16 + 1] = RGB5(31, 15, 0); // Force orange for bar[1] in rainbow mode
+    } else {
+        // All other tracks - Game Boy green
+        for(int pal = 0; pal < 7; pal++) {
+            SPRITE_PALETTE[pal * 16 + 0] = RGB5(0, 0, 0);  // Transparent
+            SPRITE_PALETTE[pal * 16 + 1] = RGB5(6, 12, 6); // Game Boy dark green for all bars
+        }
+        
+        // CRITICAL: Bar[1] needs individual handling - force Game Boy green
+        SPRITE_PALETTE[1 * 16 + 1] = RGB5(6, 12, 6); // Game Boy dark green specifically for bar[1]
+    }
+}
+
+// Update background and text colors based on current track
+static void update_background_colors(void) {
+    if (is_final_track_8ad()) {
+        // "The Fourth Color" - white background, black text
+        BG_PALETTE[0] = RGB5(31, 31, 31);  // White background
+        BG_PALETTE[17] = RGB5(0, 0, 0);    // Black text
+    } else {
+        // All other tracks - Game Boy colors
+        BG_PALETTE[0] = RGB5(19, 23, 1);   // Game Boy bright green background
+        BG_PALETTE[17] = RGB5(1, 7, 1);    // Game Boy darkest green text
+    }
+}
 
 void init_spectrum_visualizer(void) {
     if (is_initialized) return;
@@ -18,23 +66,8 @@ void init_spectrum_visualizer(void) {
     // MODE_1: No mode switching needed - everything uses MODE_1 now
     // SetMode already handled by main.c or visualization_manager
     
-    // Set up 7 different sprite palettes for colorful frequency bars spanning full spectrum
-    // Each palette has 16 colors, we use color 1 for the bar color
-    for(int pal = 0; pal < 7; pal++) {
-        SPRITE_PALETTE[pal * 16 + 0] = RGB5(0, 0, 0);  // Transparent
-        
-        // Assign colors across full spectrum for 7 bars (no brown/red needed)
-        if (pal == 0) SPRITE_PALETTE[pal * 16 + 1] = RGB5(0, 10, 31);    // Deep Blue (bass)
-        else if (pal == 1) {
-            SPRITE_PALETTE[pal * 16 + 1] = RGB5(25, 0, 31);    // Bright Magenta (bass-mid) - very different from brown
-            SPRITE_PALETTE[240] = RGB5(25, 0, 31);  // DEBUG: Store Bar[1] color for verification
-        }
-        else if (pal == 2) SPRITE_PALETTE[pal * 16 + 1] = RGB5(0, 31, 10);    // Green-blue (mid-low)
-        else if (pal == 3) SPRITE_PALETTE[pal * 16 + 1] = RGB5(0, 31, 0);     // Pure Green (mid)
-        else if (pal == 4) SPRITE_PALETTE[pal * 16 + 1] = RGB5(20, 31, 0);    // Yellow-green (mid-high)
-        else if (pal == 5) SPRITE_PALETTE[pal * 16 + 1] = RGB5(31, 25, 0);    // Yellow-orange (high)
-        else if (pal == 6) SPRITE_PALETTE[pal * 16 + 1] = RGB5(31, 8, 0);     // Orange-red (treble)
-    }
+    // Initialize palette - will be updated based on current track
+    update_spectrum_palette();
     
     // MODE_1: Standard sprite memory at 0x6010000, tiles 100+ (after font tiles 0-95)
     u32* spriteGfx = (u32*)0x6010000; // Standard sprite tile memory for MODE_1
@@ -109,6 +142,22 @@ void cleanup_spectrum_visualizer(void) {
 }
 
 void update_spectrum_visualizer(void) {
+    // Check if track has changed and update palette accordingly
+    int current_track = get_current_track_8ad();
+    if (current_track != last_track) {
+        update_spectrum_palette();
+        update_background_colors(); // Update background and text colors too
+        update_album_cover_colors(); // Update album cover colors too
+        last_track = current_track;
+    }
+    
+    // CRITICAL: Force bar[1] color every frame to prevent brown override
+    if (is_final_track_8ad()) {
+        SPRITE_PALETTE[1 * 16 + 1] = RGB5(31, 15, 0); // Orange for rainbow mode
+    } else {
+        SPRITE_PALETTE[1 * 16 + 1] = RGB5(6, 12, 6);  // Game Boy green for retro mode
+    }
+    
     reset_counter++;
     if(reset_counter >= 3) { // Balanced: update every 3 frames (20Hz) - compromise between reactivity and CPU load
         reset_counter = 0;
@@ -401,8 +450,8 @@ void render_spectrum_bars(void) {
             
             // DEBUG: Store first sprite pair's position for each bar
             if (sprite == 0) { // First sprite pair of each bar
-                if (bar == 0) { SPRITE_PALETTE[16] = bar_x; SPRITE_PALETTE[17] = sprite_y; }
-                if (bar == 1) { SPRITE_PALETTE[18] = bar_x; SPRITE_PALETTE[19] = sprite_y; }
+                if (bar == 0) { SPRITE_PALETTE[240] = bar_x; SPRITE_PALETTE[241] = sprite_y; }
+                if (bar == 1) { SPRITE_PALETTE[242] = bar_x; SPRITE_PALETTE[243] = sprite_y; }
             }
         }
     }
@@ -413,6 +462,5 @@ void render_spectrum_bars(void) {
     SPRITE_PALETTE[28] = sprite_count;
     SPRITE_PALETTE[24] = NUM_BARS; // Should be 7
     
-    // FINAL OVERRIDE: Force palette 1 to magenta at the very end to override any system interference
-    SPRITE_PALETTE[1 * 16 + 1] = RGB5(25, 0, 31);    // Force bright magenta for Bar[1] - FINAL override
+    // No override needed - use the Game Boy green set during initialization
 }

@@ -248,6 +248,15 @@ int is_playing_8ad(void)
   return playing;
 }
 
+int is_final_track_8ad(void)
+{
+  if (!fs) return 0;
+  
+  int total_tracks = gbfs_count_objs(fs);
+  // Only return true for "The Fourth Color" - last track of Side B (6 songs total)
+  return (total_tracks == 6 && current_track == 5); // Side B has 6 tracks, "The Fourth Color" is track 5 (0-indexed)
+}
+
 // ========== DEBUG UNIT TESTS ==========
 
 // Test 1: GBFS file system integrity

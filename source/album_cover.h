@@ -15,4 +15,7 @@ void init_album_cover(void);
 // Cleanup the album cover display (hides background when switching modes)
 void cleanup_album_cover(void);
 
+// Update colors based on current track
+void update_album_cover_colors(void);
+
 #endif // ALBUM_COVER_H
