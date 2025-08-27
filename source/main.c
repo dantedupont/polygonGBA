@@ -64,9 +64,9 @@ int main() {
     irqInit();
     irqEnable(IRQ_VBLANK);
     
-    // MODE_1: Use unified video mode for all visualizations
-    // This eliminates mode switching corruption artifacts
-    SetMode(MODE_1 | BG0_ENABLE | BG1_ENABLE | BG2_ENABLE | OBJ_ENABLE | OBJ_1D_MAP);
+    // MODE_0: Use regular tiled backgrounds - BG2 confirmed working
+    // Enable all layers now that we know BG2 renders correctly
+    SetMode(MODE_0 | BG0_ENABLE | BG1_ENABLE | BG2_ENABLE | OBJ_ENABLE | OBJ_1D_MAP);
     
     // Wait for any pending DMA operations like album cover does
     while (REG_DMA3CNT & DMA_ENABLE) VBlankIntrWait();
@@ -83,7 +83,7 @@ int main() {
     REG_BG1VOFS = 0;
     
     // Configure BG2 for solid background
-    REG_BG2CNT = BG_SIZE_0 | BG_256_COLOR | CHAR_BASE(1) | SCREEN_BASE(29);
+    REG_BG2CNT = BG_SIZE_0 | BG_256_COLOR | CHAR_BASE(1) | SCREEN_BASE(29) | BG_PRIORITY(2);
     
     // Clear BG1 tilemap (text layer) BEFORE enabling it
     u16* textMap = (u16*)SCREEN_BASE_BLOCK(30);
@@ -91,25 +91,45 @@ int main() {
         textMap[i] = 0;
     }
     
-    // Set up solid Game Boy green background using BG2
+    // Now that we know BG2 works, use simple solid background
     u16* bgMap = (u16*)SCREEN_BASE_BLOCK(29);
     for (int i = 0; i < 1024; i++) {
-        bgMap[i] = 1; // Use tile 1 (background tile)
+        bgMap[i] = 1; // Use tile 1 for solid background
     }
     
     // Create a simple background tile at index 1 in character base 1
     u8* tileMem = (u8*)0x6004000; // Character base 1
-    for (int i = 0; i < 64; i++) { // 8x8 tile in 256-color mode = 64 bytes
-        tileMem[64 + i] = 0; // Tile 1 (offset 64), all pixels use color 0 (background)
+    
+    // Clear the entire tile memory first
+    for (int i = 0; i < 128; i++) { // Clear tiles 0 and 1
+        tileMem[i] = 0;
+    }
+    
+    // DEBUG: Create multiple test tiles with different colors
+    // Tile 1: All palette index 1 (magenta)
+    for (int i = 0; i < 64; i++) {
+        tileMem[64 + i] = 1; // Tile 1 = palette index 1
+    }
+    // Tile 2: All palette index 2 (yellow)  
+    for (int i = 0; i < 64; i++) {
+        tileMem[128 + i] = 2; // Tile 2 = palette index 2
+    }
+    // Tile 3: All palette index 3 (cyan)
+    for (int i = 0; i < 64; i++) {
+        tileMem[192 + i] = 3; // Tile 3 = palette index 3
     }
     
     // Set up Game Boy green background color palette
     // Game Boy green (#9bbc0f = 155,188,15 RGB) converted to RGB5
-    BG_PALETTE[0] = RGB5(19, 23, 1);  // Game Boy bright green background
+    BG_PALETTE[0] = RGB5(0, 0, 0);    // Black (unused)
+    BG_PALETTE[1] = RGB5(19, 23, 1);  // Game Boy bright green for tile 1
+    
+    // Also ensure the font text color is set correctly
+    BG_PALETTE[17] = RGB5(1, 7, 1);    // Game Boy darkest green text
     
     // EXPERIMENT: Load the complete album palette to see if that activates font system
     // This replicates exactly what album cover does for palette initialization
-    for (int i = 1; i < 256; i++) { // Start from 1 to preserve our Game Boy background
+    for (int i = 2; i < 256; i++) { // Start from 2 to preserve BG_PALETTE[0] and BG_PALETTE[1]
         u16 originalColor = polygondwanaland_128Pal[i];
         u16 r = (originalColor & 0x1F);           // Extract R
         u16 g = (originalColor >> 5) & 0x1F;     // Extract G  
@@ -166,6 +186,13 @@ int main() {
     // Start first track
     start_8ad_track(0);
     
+    // CRITICAL: Now that audio system is ready, set proper Game Boy colors
+    // This ensures track detection works correctly and colors are set properly
+    update_album_cover_colors();
+    
+    // FINAL OVERRIDE: Force the background tile color after ALL initialization
+    BG_PALETTE[1] = RGB5(19, 23, 1);  // Game Boy bright green for tile 1
+    
     // Font system already initialized above
     
     unsigned short last_keys = 0;
@@ -202,6 +229,13 @@ int main() {
         
         // Handle visualization switching (UP/DOWN)
         handle_visualization_controls(pressed);
+        
+        // CRITICAL: Set background color based on current track
+        if (is_final_track_8ad()) {
+            BG_PALETTE[1] = RGB5(31, 31, 31);  // White background for "The Fourth Colour"
+        } else {
+            BG_PALETTE[1] = RGB5(19, 23, 1);   // Game Boy bright green for all other tracks
+        }
         
         // Update visualization data for next frame
         update_current_visualization();
