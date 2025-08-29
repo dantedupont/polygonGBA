@@ -1,14 +1,14 @@
-# PolygonGBA 🎵
+# PolygonGBA 🎵🦎🧙‍♂️
 
-A Game Boy Advance album player featuring King Gizzard & The Lizard Wizard's *Polygondwanaland* with real-time audio visualizations.
 
 ![GBA Album Player](docs/polygonGBA.png)
 
 ## 🎮 What is PolygonGBA?
 
-PolygonGBA transforms your Game Boy Advance into a portable music player, complete with:
+PolygonGBA is an audiovisual release of the album *Polygondwanaland*, complete with:
 
-- **Full Album Playback**: Complete *Polygondwanaland* album, 
+- **Full Album Playback** across Side A and Side B
+- **Track Controls**
 - **Real-Time Visualizations**: Spectrum analyzer, waveform, and an album cover display view.
 
 
