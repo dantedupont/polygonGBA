@@ -152,14 +152,14 @@ Detailed technical documentation available in `/docs/`:
 ## 📜 Acknowledgements
 
 This project would not have been possible at all without the open source technologies created by the homebrew community: 
--  **Damien Yerrick's** (Pin Eight) Game Boy File System and 8AD codec were crucial building blocks for this project. 
-- Developing for the GBA is far more accesible thanks to **DevkitPro**. 
-- **GSM-Player-GBA** served as an immensly helpful reference when designing the audio pipeline
-- **TONC** for its incredibly detailed description of GBA architecture which helped me understand what was going on. 
+-  **[Damien Yerrick's (Pin Eight)](https://pineight.com/)** Game Boy File System and 8AD codec were crucial building blocks for this project. 
+- Developing for the GBA is far more accesible thanks to **[DevkitPro](https://devkitpro.org/)**. 
+- **[GSM-Player-GBA](https://github.com/AntonioND/gsm-player-gba)** served as an immensly helpful reference when designing the audio pipeline
+- **[TONC](https://www.coranac.com/tonc/text/)** for the incredibly detailed description of GBA architecture which helped me understand what was going on. 
 
 And of course,
 
-My endless gratitude to King GIzzard & the Lizard Wizard for all of their incredible music, and for releasing *Polygondwanaland* under Creative Commons, encouraging their fans to make their own copies. 
+My endless gratitude to King Gizzard & the Lizard Wizard for all of their incredible music, and for releasing *Polygondwanaland* under Creative Commons, encouraging their fans to make their own copies. 
 
 
 ### Development
