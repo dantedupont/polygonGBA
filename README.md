@@ -1,14 +1,14 @@
-# PolygonGBA 🎵
+# PolygonGBA 🎵🦎🧙‍♂️
 
-A Game Boy Advance album player featuring King Gizzard & The Lizard Wizard's *Polygondwanaland* with real-time audio visualizations.
 
 ![GBA Album Player](docs/polygonGBA.png)
 
 ## 🎮 What is PolygonGBA?
 
-PolygonGBA transforms your Game Boy Advance into a portable music player, complete with:
+PolygonGBA is an audiovisual release of the album *Polygondwanaland*, complete with:
 
-- **Full Album Playback**: Complete *Polygondwanaland* album, 
+- **Full Album Playback** across Side A and Side B
+- **Track Controls**
 - **Real-Time Visualizations**: Spectrum analyzer, waveform, and an album cover display view.
 
 
@@ -152,14 +152,14 @@ Detailed technical documentation available in `/docs/`:
 ## 📜 Acknowledgements
 
 This project would not have been possible at all without the open source technologies created by the homebrew community: 
--  **Damien Yerrick's** (Pin Eight) Game Boy File System and 8AD codec were crucial building blocks for this project. 
-- Developing for the GBA is far more accesible thanks to **DevkitPro**. 
-- **GSM-Player-GBA** served as an immensly helpful reference when designing the audio pipeline
-- **TONC** for its incredibly detailed description of GBA architecture which helped me understand what was going on. 
+-  **[Damien Yerrick's (Pin Eight)](https://pineight.com/)** Game Boy File System and 8AD codec were crucial building blocks for this project. 
+- Developing for the GBA is far more accesible thanks to **[DevkitPro](https://devkitpro.org/)**. 
+- **[GSM-Player-GBA](https://github.com/AntonioND/gsm-player-gba)** served as an immensly helpful reference when designing the audio pipeline
+- **[TONC](https://www.coranac.com/tonc/text/)** for the incredibly detailed description of GBA architecture which helped me understand what was going on. 
 
 And of course,
 
-My endless gratitude to King GIzzard & the Lizard Wizard for all of their incredible music, and for releasing *Polygondwanaland* under Creative Commons, encouraging their fans to make their own copies. 
+My endless gratitude to King Gizzard & the Lizard Wizard for all of their incredible music, and for releasing *Polygondwanaland* under Creative Commons, encouraging their fans to make their own copies. 
 
 
 ### Development
