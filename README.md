@@ -23,13 +23,13 @@ PolygonGBA is an audiovisual release of the album *Polygondwanaland*, complete w
 
 ## 🎵 Album Structure
 
-### Side A (4 tracks, ~10.8MB)
+### Side A (4 tracks, 11MB)
 1. Crumbling Castle
 2. Polygondwanaland  
 3. The Castle In The Air
 4. Deserted Dunes Welcome Weary Feet
 
-### Side B (6 tracks, ~15.2MB)
+### Side B (6 tracks, 12MB)
 5. Inner Cell
 6. Loyalty
 7. Horology  
@@ -44,7 +44,7 @@ PolygonGBA is an audiovisual release of the album *Polygondwanaland*, complete w
 ### Audio System
 - **Codec**: 8AD (Pin Eight ADPCM) for efficient compression (~6% CPU usage)
 - **Sample Rate**: 18,157 Hz mono
-- **Compression**: ~4:1 ratio (525MB → 26MB total)
+- **Compression**: ~23:1 ratio (525MB → 23MB total)
 - **Playback**: Hardware-accelerated Direct Sound with double buffering
 
 ### Graphics System  
@@ -132,7 +132,7 @@ Detailed technical documentation available in `/docs/`:
 
 1. **Custom PGDA**: Too complex, abandoned
 2. **GSM**: Great compression but 70% CPU usage  
-3. **8AD**: Perfect balance - 6% CPU, 4:1 compression
+3. **8AD**: Perfect balance - 6% CPU, 23:1 compression
 
 **Graphics Approach:**
 - Hardware sprites for visualizations (smooth 60 FPS)
