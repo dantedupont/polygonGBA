@@ -94,7 +94,7 @@ When you run the ROM, your code uses the GBFS functions (`find_first_gbfs_file()
 
 ## Audio Format Benefits (8AD vs GSM):
 - **CPU Usage**: ~6% (vs 70% for GSM) - leaves plenty of power for visualizations
-- **Compression**: ~4:1 (vs 10:1 for GSM) - larger files but much better performance
+- **Compression**: ~23:1 (vs 10:1 for GSM) - better compression and much better performance
 - **Quality**: Near-CD quality with ADPCM encoding
 
 ## Current Features:
